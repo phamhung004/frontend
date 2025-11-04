@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { productService } from '../services/productService';
 import { pdfProductService } from '../services/pdfProductService';
-import type { ProductDetail } from '../types/product';
+import type { Product, ProductDetail } from '../types/product';
 import InstagramFeed from '../components/InstagramFeed';
 import { formatCurrency } from '../utils/currency';
 import { resolveProductPricing } from '../utils/pricing';
@@ -20,6 +20,7 @@ const ProductDetailPDF = () => {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -50,6 +51,52 @@ const ProductDetailPDF = () => {
 
     fetchProduct();
   }, [id, navigate]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchRecommendedProducts = async () => {
+      try {
+        const response = await productService.getFilteredProducts({
+          sortBy: 'latest',
+          page: 1,
+          pageSize: 6,
+          published: true,
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        const currentProductId = product?.id ?? (id ? parseInt(id, 10) : null);
+        const filtered = response.products.filter((item) => item.id !== currentProductId);
+        setRecommendedProducts(filtered.slice(0, 3));
+      } catch (err) {
+        console.error('Failed to load recommended products:', err);
+      }
+    };
+
+    fetchRecommendedProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, product?.id]);
+
+  const resolveRecommendedPrice = (item: Product) => {
+    const price = item.finalPrice ?? item.salePrice ?? item.regularPrice ?? 0;
+    if (item.productType === 'PDF' && price === 0) {
+      return 'MIỄN PHÍ';
+    }
+    return formatCurrency(price);
+  };
+
+  const handleNavigateRecommendation = (item: Product) => {
+    const destination = item.productType === 'PDF'
+      ? `/product-pdf/${item.id}`
+      : `/product/${item.id}`;
+    navigate(destination);
+  };
 
   const handleDownload = async () => {
     if (!user) {
@@ -109,12 +156,6 @@ const ProductDetailPDF = () => {
   const basePrice = pricing?.basePrice ?? product?.regularPrice ?? finalPrice;
   const hasDiscount = pricing?.hasDiscount ?? false;
   const isFree = finalPrice === 0;
-
-  const recommendedProducts = [
-    { name: 'Tập tô màu', price: 56.40, image: '/images/product-1.png' },
-    { name: 'Bộ tranh học tập', price: 253.0, image: '/images/product-2.png' },
-    { name: 'Sách hướng dẫn', price: 150.6, image: '/images/product-3.png' },
-  ];
 
   if (loading) {
     return (
@@ -321,15 +362,28 @@ const ProductDetailPDF = () => {
               Gợi ý<br />cho bạn
             </h3>
             <div className="space-y-6">
-              {recommendedProducts.map((product, index) => (
-                <div key={index} className="cursor-pointer">
+              {recommendedProducts.map((item) => (
+                <div
+                  key={item.id}
+                  className="cursor-pointer"
+                  onClick={() => handleNavigateRecommendation(item)}
+                >
                   <div className="w-[171px] h-[171px] bg-[#EFF2F3] mb-2">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    <img
+                      src={item.thumbnailUrl || '/images/placeholder.webp'}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <h4 className="text-sm font-bold text-[#1C1D1D] mb-1">{product.name}</h4>
-                  <p className="text-sm text-[#9F86D9]">{product.price.toLocaleString('vi-VN')}đ</p>
+                  <h4 className="text-sm font-bold text-[#1C1D1D] mb-1" title={item.name}>
+                    {item.name}
+                  </h4>
+                  <p className="text-sm text-[#9F86D9]">{resolveRecommendedPrice(item)}</p>
                 </div>
               ))}
+              {recommendedProducts.length === 0 && (
+                <p className="text-center text-xs text-gray-500">Chưa có gợi ý phù hợp.</p>
+              )}
             </div>
           </div>
         </div>

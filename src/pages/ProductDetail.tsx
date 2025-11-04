@@ -5,7 +5,9 @@ import { resolveProductPricing } from '../utils/pricing';
 import RecentlyViewed from '../components/shop/RecentlyViewed';
 import InstagramFeed from '../components/InstagramFeed';
 import { productService } from '../services/productService';
-import type { ProductDetail, ProductVariant } from '../types/product';
+import reviewService from '../services/reviewService';
+import type { Product, ProductDetail, ProductVariant } from '../types/product';
+import type { ReviewStats } from '../types/review';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../components/ui/ToastContainer';
 import ProductLanding from './ProductLanding';
@@ -29,6 +31,10 @@ const ProductDetail = () => {
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('description');
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
+  const [reviewStatsLoading, setReviewStatsLoading] = useState(false);
+  const [reviewStatsError, setReviewStatsError] = useState<string | null>(null);
   const placeholderImage = '/images/placeholder.webp';
 
   // Fetch product data
@@ -114,11 +120,98 @@ const ProductDetail = () => {
     setQuantityInput(quantity.toString());
   }, [quantity]);
 
-  const recommendedProducts = [
-    { name: 'Tô màu chú chó Labrador dễ thương', price: 56.40, image: '/images/tomaucho.webp' },
-    { name: 'Bảng chữ cái viết thường tiếng việt', price: 253.0, image: '/images/bangchucai.webp' },
-    { name: 'Kéo Capybara an toàn cho bé', price: 150.6, image: '/images/keocapi.webp' },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchRecommendedProducts = async () => {
+      try {
+        const response = await productService.getFilteredProducts({
+          sortBy: 'latest',
+          page: 1,
+          pageSize: 6,
+          published: true,
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        const currentProductId = product?.id ?? (id ? parseInt(id, 10) : null);
+        const filtered = response.products.filter((item) => item.id !== currentProductId);
+        setRecommendedProducts(filtered.slice(0, 3));
+      } catch (error) {
+        console.error('Failed to load recommended products:', error);
+      }
+    };
+
+    fetchRecommendedProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, product?.id]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReviewStats = async () => {
+      if (!product?.id) {
+        setReviewStats(null);
+        return;
+      }
+
+      try {
+        setReviewStatsLoading(true);
+        setReviewStatsError(null);
+        const stats = await reviewService.getProductReviewStats(product.id);
+        if (!isMounted) {
+          return;
+        }
+        setReviewStats(stats);
+      } catch (err) {
+        console.error('Failed to load review statistics:', err);
+        if (isMounted) {
+          setReviewStatsError('Không thể tải thống kê đánh giá');
+          setReviewStats(null);
+        }
+      } finally {
+        if (isMounted) {
+          setReviewStatsLoading(false);
+        }
+      }
+    };
+
+    fetchReviewStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [product?.id]);
+
+  const resolveRecommendedPrice = (item: Product) => {
+    const price = item.finalPrice ?? item.salePrice ?? item.regularPrice ?? 0;
+    if (item.productType === 'PDF' && price === 0) {
+      return 'MIỄN PHÍ';
+    }
+    return formatCurrency(price);
+  };
+
+  const navigateToProduct = (item: Product) => {
+    const destination = item.productType === 'PDF'
+      ? `/product-pdf/${item.id}`
+      : `/product/${item.id}`;
+    navigate(destination);
+  };
+
+  const ratingBreakdown = useMemo(() => {
+    const ratings = [5, 4, 3, 2, 1];
+    const total = reviewStats?.totalReviews ?? 0;
+    return ratings.map((stars) => {
+      const count = reviewStats?.ratingDistribution?.[stars] ?? 0;
+      const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+      return { stars, count, percentage };
+    });
+  }, [reviewStats]);
 
   const pricing = useMemo(() => {
     if (!product) {
@@ -379,13 +472,29 @@ const ProductDetail = () => {
             {/* Rating & Reviews */}
             <div className="flex items-center gap-4 mb-4">
               <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} width="20" height="20" viewBox="0 0 20 20" fill="#FCC605">
-                    <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z"/>
-                  </svg>
-                ))}
+                {[...Array(5)].map((_, index) => {
+                  const starNumber = index + 1;
+                  const isFilled = (reviewStats?.averageRating ?? 0) >= starNumber;
+                  return (
+                    <svg
+                      key={starNumber}
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill={isFilled ? '#FCC605' : '#E5E7EB'}
+                    >
+                      <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z" />
+                    </svg>
+                  );
+                })}
               </div>
-              <span className="text-[#646667]">(14 Đánh giá - 25 Đơn hàng)</span>
+              <span className="text-[#646667]">
+                {reviewStatsLoading
+                  ? 'Đang tải đánh giá...'
+                  : reviewStatsError
+                    ? 'Không thể tải đánh giá'
+                    : `${(reviewStats?.averageRating ?? 0).toFixed(1)} / 5 (${reviewStats?.totalReviews ?? 0} đánh giá)`}
+              </span>
             </div>
 
             {/* Price */}
@@ -597,15 +706,28 @@ const ProductDetail = () => {
               Gợi ý<br />cho bạn
             </h3>
             <div className="space-y-6">
-              {recommendedProducts.map((product, index) => (
-                <div key={index} className="cursor-pointer">
+              {recommendedProducts.map((item) => (
+                <div
+                  key={item.id}
+                  className="cursor-pointer"
+                  onClick={() => navigateToProduct(item)}
+                >
                   <div className="w-[171px] h-[171px] bg-[#EFF2F3] mb-2">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    <img
+                      src={item.thumbnailUrl || '/images/placeholder.webp'}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <h4 className="text-sm font-bold text-[#1C1D1D] mb-1">{product.name}</h4>
-                  <p className="text-sm text-[#9F86D9]">{formatCurrency(product.price)}</p>
+                  <h4 className="text-sm font-bold text-[#1C1D1D] mb-1" title={item.name}>
+                    {item.name}
+                  </h4>
+                  <p className="text-sm text-[#9F86D9]">{resolveRecommendedPrice(item)}</p>
                 </div>
               ))}
+              {recommendedProducts.length === 0 && (
+                <p className="text-center text-xs text-gray-500">Chưa có gợi ý phù hợp.</p>
+              )}
             </div>
           </div>
         </div>
@@ -752,28 +874,33 @@ const ProductDetail = () => {
           <div className="w-[336px]">
             <h3 className="text-base font-bold text-[#9F86D9] mb-4">Đánh giá của khách hàng</h3>
             <div className="space-y-3">
-              {[
-                { stars: 5, percentage: 80 },
-                { stars: 4, percentage: 72 },
-                { stars: 3, percentage: 25 },
-                { stars: 2, percentage: 16 },
-                { stars: 1, percentage: 4 },
-              ].map((review) => (
-                <div key={review.stars} className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-[#1C1D1D] w-[55px]">{review.stars} Sao</span>
-                    <div className="w-[202px] h-1 bg-[#DBE2E5] rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#9F86D9]"
-                        style={{ width: `${review.percentage}%` }}
-                      />
+              {reviewStatsLoading && (
+                <p className="text-sm text-gray-500">Đang tải thống kê...</p>
+              )}
+              {!reviewStatsLoading && reviewStatsError && (
+                <p className="text-sm text-red-500">{reviewStatsError}</p>
+              )}
+              {!reviewStatsLoading && !reviewStatsError && reviewStats && reviewStats.totalReviews === 0 && (
+                <p className="text-sm text-gray-500">Chưa có đánh giá nào cho sản phẩm này.</p>
+              )}
+              {!reviewStatsLoading && !reviewStatsError && reviewStats && reviewStats.totalReviews > 0 && (
+                ratingBreakdown.map((review) => (
+                  <div key={review.stars} className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-[#1C1D1D] w-[55px]">{review.stars} Sao</span>
+                      <div className="w-[202px] h-1 bg-[#DBE2E5] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#9F86D9]"
+                          style={{ width: `${review.percentage}%` }}
+                        />
+                      </div>
                     </div>
+                    <span className="text-xs text-[#1C1D1D] border border-[#DBE2E5] rounded px-2 py-1">
+                      {review.count} đánh giá
+                    </span>
                   </div>
-                  <span className="text-xs text-[#1C1D1D] border border-[#DBE2E5] rounded px-2 py-1">
-                    {review.percentage}%
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
