@@ -17,7 +17,7 @@ import ProductDetailPDF from './pages/ProductDetailPDF';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
-import Blog from './pages/Blog';
+// import Blog from './pages/Blog';
 import Admin from './pages/Admin';
 import Account from './pages/Account';
 import Notifications from './pages/account/Notifications';
