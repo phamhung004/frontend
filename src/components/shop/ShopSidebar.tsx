@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import categoryService, { type Category } from '../../services/categoryService';
 import { formatCurrency } from '../../utils/currency';
 import { useShop } from '../../contexts/ShopContext';
+import type { RatingKey } from '../../services/productService';
 
 const ShopSidebar = () => {
   const { t } = useTranslation();
   const loadErrorMessage = t('shop.categoriesLoadError');
   const noCategoriesMessage = t('shop.noCategories');
   
-  const { filters, toggleCategory, setPriceRange, setMinRating, clearFilters } = useShop();
+  const { filters, toggleCategory, setPriceRange, setMinRating, clearFilters, ratingCounts } = useShop();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState<boolean>(false);
@@ -57,13 +58,29 @@ const ShopSidebar = () => {
     { from: 150000, to: 200000, count: 78 },
     { from: 200000, to: null, count: 125 },
   ];
-  const ratingFilters = [
-    { value: 5, count: 156 },
-    { value: 4, count: 98 },
-    { value: 3, count: 65 },
-    { value: 2, count: 34 },
-    { value: 1, count: 12 },
-  ];
+  const ratingOptions: RatingKey[] = [5, 4, 3, 2, 1];
+
+  const totalRatings = useMemo(
+    () => Object.values(ratingCounts).reduce((total, count) => total + count, 0),
+    [ratingCounts]
+  );
+
+  const itemsLabel = t('shop.items') || 'sản phẩm';
+
+  const renderRatingStars = (filledStars: number) => (
+    <div className="flex items-center gap-1">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <svg
+          key={index}
+          className="w-4 h-4"
+          viewBox="0 0 20 20"
+          fill={index < filledStars ? '#FCC605' : '#E5E7EB'}
+        >
+          <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z" />
+        </svg>
+      ))}
+    </div>
+  );
 
   // Handle category toggle
   const handleCategoryClick = (categoryId: number | undefined) => {
@@ -258,46 +275,56 @@ const ShopSidebar = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-gray-900">{t('shop.ratingTitle')}</h3>
-          <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
-          </svg>
+          <span className="text-xs text-gray-500">
+            {totalRatings > 0 ? `${totalRatings} ${itemsLabel}` : t('shop.noRatings') || 'Chưa có dữ liệu'}
+          </span>
         </div>
         <div className="space-y-3">
-          {ratingFilters.map((rating) => {
-            const isSelected = isRatingSelected(rating.value);
+          {ratingOptions.map((star) => {
+            const isSelected = isRatingSelected(star);
+            const count = ratingCounts[star] ?? 0;
+            const isDisabled = count === 0;
+
             return (
-              <div 
-                key={rating.value} 
-                className={`flex items-center justify-between cursor-pointer transition-colors ${
-                  isSelected ? 'text-[#9F86D9] font-medium' : 'hover:text-[#9F86D9]'
-                }`}
-                onClick={() => handleRatingClick(rating.value)}
+              <div
+                key={star}
+                className={`flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer transition-colors border ${
+                  isSelected
+                    ? 'border-[#9F86D9] bg-[#F6F1FF] text-[#4B3E82]'
+                    : 'border-gray-200 hover:border-[#9F86D9] hover:bg-[#F6F1FF]'
+                } ${isDisabled ? 'opacity-50 cursor-not-allowed hover:border-gray-200 hover:bg-transparent' : ''}`}
+                onClick={() => {
+                  if (!isDisabled) {
+                    handleRatingClick(star);
+                  }
+                }}
+                role="button"
+                tabIndex={isDisabled ? -1 : 0}
+                onKeyDown={(event) => {
+                  if (isDisabled) {
+                    return;
+                  }
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleRatingClick(star);
+                  }
+                }}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <input
                     type="radio"
                     checked={isSelected}
+                    disabled={isDisabled}
                     onChange={() => {}}
                     className="w-4 h-4 text-[#9F86D9] border-gray-300 focus:ring-[#9F86D9]"
                   />
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <svg
-                        key={index}
-                        className="w-4 h-4"
-                        viewBox="0 0 20 20"
-                        fill={index < rating.value ? '#FCC605' : '#E5E7EB'}
-                      >
-                        <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <span className="text-base">{t('shop.ratingLabel', { count: rating.value })}</span>
+                  {renderRatingStars(star)}
+                  <span className="text-sm text-gray-900">{t('shop.ratingLabel', { count: star }) || `${star} sao`}</span>
                 </div>
-                <span className={`px-2 py-1 rounded text-sm ${
+                <span className={`px-2 py-1 text-xs font-medium rounded ${
                   isSelected ? 'bg-[#9F86D9] text-white' : 'bg-gray-100 text-gray-900'
                 }`}>
-                  {rating.count}
+                  {count}
                 </span>
               </div>
             );

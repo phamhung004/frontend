@@ -1,6 +1,8 @@
 import api from './api';
+import reviewService from './reviewService';
 import type { Product, ProductDetail, ProductRequest, ProductVariant } from '../types/product';
 import type { ProductQueryParams } from '../types/shop';
+import type { ProductRatingSummary, ReviewStats } from '../types/review';
 
 export interface ProductsResponse {
   products: Product[];
@@ -8,7 +10,57 @@ export interface ProductsResponse {
   totalPages: number;
   currentPage: number;
   pageSize: number;
+  ratingCounts: RatingCounts;
+  productRatings: Record<number, ProductRatingSummary>;
 }
+
+export type RatingKey = 1 | 2 | 3 | 4 | 5;
+export type RatingCounts = Record<RatingKey, number>;
+
+export const createEmptyRatingCounts = (): RatingCounts => ({
+  5: 0,
+  4: 0,
+  3: 0,
+  2: 0,
+  1: 0,
+});
+
+const reviewStatsCache = new Map<number, ReviewStats | null>();
+
+const getCachedReviewStats = async (productId: number): Promise<ReviewStats | null> => {
+  if (reviewStatsCache.has(productId)) {
+    return reviewStatsCache.get(productId) ?? null;
+  }
+
+  try {
+    const stats = await reviewService.getProductReviewStats(productId);
+    reviewStatsCache.set(productId, stats);
+    return stats;
+  } catch (error) {
+    console.error(`Error fetching review stats for product ${productId}:`, error);
+    reviewStatsCache.set(productId, null);
+    return null;
+  }
+};
+
+const computeRatingCounts = (products: Product[], statsMap: Record<number, ReviewStats | null>): RatingCounts => {
+  const counts = createEmptyRatingCounts();
+
+  products.forEach((product) => {
+    const stats = statsMap[product.id];
+    if (!stats || stats.totalReviews === 0) {
+      return;
+    }
+
+    const rounded = Math.round(stats.averageRating);
+    if (rounded >= 1 && rounded <= 5) {
+      const bucket = rounded as RatingKey;
+      counts[bucket] += 1;
+    }
+  });
+
+  return counts;
+};
 
 export const productService = {
   // Get all products with filters and pagination
@@ -21,29 +73,26 @@ export const productService = {
   // Get products with advanced filtering, sorting, and pagination
   getFilteredProducts: async (queryParams: ProductQueryParams): Promise<ProductsResponse> => {
     try {
-      // Build query parameters
       const params: Record<string, any> = {};
-      
+
       if (queryParams.published !== undefined) {
         params.published = queryParams.published;
       }
-      
+
       if (queryParams.categoryIds && queryParams.categoryIds.length === 1) {
-        // Let the backend narrow down by a single category when possible
         params.categoryId = queryParams.categoryIds[0];
       }
-      
+
       if (queryParams.searchKeyword) {
         params.keyword = queryParams.searchKeyword;
       }
 
-      // Fetch all products (since backend doesn't support pagination yet)
       const response = await api.get('/products', { params });
       let products: Product[] = response.data;
 
       if (queryParams.categoryIds && queryParams.categoryIds.length > 0) {
         const selectedCategoryIds = new Set(queryParams.categoryIds);
-        products = products.filter(product => {
+        products = products.filter((product) => {
           if (product.categoryId == null) {
             return false;
           }
@@ -51,9 +100,17 @@ export const productService = {
         });
       }
 
-      // Client-side filtering for price range
+      const ratingStatsMap: Record<number, ReviewStats | null> = {};
+      if (products.length > 0) {
+        await Promise.all(
+          products.map(async (product) => {
+            ratingStatsMap[product.id] = await getCachedReviewStats(product.id);
+          })
+        );
+      }
+
       if (queryParams.minPrice !== undefined || queryParams.maxPrice !== undefined) {
-        products = products.filter(product => {
+        products = products.filter((product) => {
           const price = product.finalPrice ?? product.salePrice ?? product.regularPrice;
           if (queryParams.minPrice !== undefined && price < queryParams.minPrice) {
             return false;
@@ -65,15 +122,30 @@ export const productService = {
         });
       }
 
-      // Client-side filtering for rating (if needed in the future)
-      // Currently products don't have rating field, so we skip this
+      const ratingCounts = computeRatingCounts(products, ratingStatsMap);
 
-      // Client-side sorting
+      if (queryParams.minRating !== undefined && queryParams.minRating !== null) {
+        products = products.filter((product) => {
+          const stats = ratingStatsMap[product.id];
+          if (!stats || stats.totalReviews === 0) {
+            return false;
+          }
+
+          const rounded = Math.round(stats.averageRating);
+          if (rounded < 1 || rounded > 5) {
+            return false;
+          }
+
+          const bucket = rounded as RatingKey;
+          return bucket === queryParams.minRating;
+        });
+      }
+
       if (queryParams.sortBy) {
         products = [...products].sort((a, b) => {
           const priceA = a.finalPrice ?? a.salePrice ?? a.regularPrice;
           const priceB = b.finalPrice ?? b.salePrice ?? b.regularPrice;
-          
+
           switch (queryParams.sortBy) {
             case 'price-asc':
               return priceA - priceB;
@@ -83,6 +155,11 @@ export const productService = {
               return a.name.localeCompare(b.name);
             case 'name-desc':
               return b.name.localeCompare(a.name);
+            case 'rating': {
+              const ratingA = ratingStatsMap[a.id]?.averageRating ?? 0;
+              const ratingB = ratingStatsMap[b.id]?.averageRating ?? 0;
+              return ratingB - ratingA;
+            }
             case 'latest':
               return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
             default:
@@ -91,7 +168,6 @@ export const productService = {
         });
       }
 
-      // Client-side pagination
       const page = queryParams.page || 1;
       const pageSize = queryParams.pageSize || 12;
       const totalItems = products.length;
@@ -100,12 +176,25 @@ export const productService = {
       const endIndex = startIndex + pageSize;
       const paginatedProducts = products.slice(startIndex, endIndex);
 
+      const productRatings: Record<number, ProductRatingSummary> = {};
+      paginatedProducts.forEach((product) => {
+        const stats = ratingStatsMap[product.id];
+        if (stats) {
+          productRatings[product.id] = {
+            averageRating: stats.averageRating,
+            totalReviews: stats.totalReviews,
+          };
+        }
+      });
+
       return {
         products: paginatedProducts,
         totalItems,
         totalPages,
         currentPage: page,
-        pageSize
+        pageSize,
+        ratingCounts,
+        productRatings,
       };
     } catch (error) {
       console.error('Error fetching filtered products:', error);

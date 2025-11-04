@@ -21,7 +21,8 @@ const ProductGrid = () => {
     sortBy, 
     setSortBy, 
     viewMode, 
-    setViewMode 
+    setViewMode,
+    productRatings
   } = useShop();
   
   const [togglingWishlist, setTogglingWishlist] = useState<number | null>(null);
@@ -36,6 +37,7 @@ const ProductGrid = () => {
     { value: 'price-desc', label: t('shop.sortPriceDesc') || 'Giá: Cao đến thấp' },
     { value: 'name-asc', label: t('shop.sortNameAsc') || 'Tên: A-Z' },
     { value: 'name-desc', label: t('shop.sortNameDesc') || 'Tên: Z-A' },
+    { value: 'rating', label: t('shop.sortRating') || 'Đánh giá cao' },
   ];
 
   const currentSortLabel = sortOptions.find(opt => opt.value === sortBy)?.label || sortOptions[0].label;
@@ -94,6 +96,35 @@ const ProductGrid = () => {
         {discount.discountType === 'PERCENTAGE'
           ? `-${discount.discountValue}%`
           : `-${formatCurrency(product.discountAmount ?? 0)}`}
+      </div>
+    );
+  };
+
+  const renderRatingStars = (rating: number) => {
+    const clamped = Math.max(0, Math.min(5, rating));
+    const percentage = (clamped / 5) * 100;
+
+    return (
+      <div className="relative flex">
+        <div className="flex text-gray-300">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <svg key={`empty-${index}`} className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z" />
+            </svg>
+          ))}
+        </div>
+        <div
+          className="absolute inset-0 overflow-hidden text-[#FCC605]"
+          style={{ width: `${percentage}%` }}
+        >
+          <div className="flex">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <svg key={`filled-${index}`} className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z" />
+              </svg>
+            ))}
+          </div>
+        </div>
       </div>
     );
   };
@@ -293,10 +324,12 @@ const ProductGrid = () => {
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <h3 className="font-bold text-lg mb-2">{product.name}</h3>
-                      <div className="flex items-center gap-1 mb-3">
-                        {[...Array(5)].map((_, i) => (
-                          <span key={i} className="text-yellow-400 text-sm">★</span>
-                        ))}
+                      <div className="flex items-center gap-2 mb-3">
+                        {renderRatingStars(productRatings[product.id]?.averageRating ?? 0)}
+                        <span className="text-xs text-gray-500">
+                          {productRatings[product.id]?.totalReviews ?? 0}{' '}
+                          {t('shop.reviewsLabel') || 'đánh giá'}
+                        </span>
                       </div>
                       {product.shortDescription && (
                         <p className="text-gray-600 text-sm line-clamp-2 mb-3">{product.shortDescription}</p>
@@ -401,10 +434,12 @@ const ProductGrid = () => {
                   <h3 className="font-bold text-base mb-2 truncate" title={product.name}>
                     {product.name}
                   </h3>
-                  <div className="flex items-center gap-1 justify-center mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-yellow-400 text-sm">★</span>
-                    ))}
+                  <div className="flex items-center gap-2 justify-center mb-2">
+                    {renderRatingStars(productRatings[product.id]?.averageRating ?? 0)}
+                    <span className="text-xs text-gray-500">
+                      {productRatings[product.id]?.totalReviews ?? 0}{' '}
+                      {t('shop.reviewsLabel') || 'đánh giá'}
+                    </span>
                   </div>
                   <div className="flex flex-col items-center">
                     <p className="text-[#9F86D9] font-normal text-lg">

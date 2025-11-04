@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { productService, type ProductsResponse } from '../services/productService';
+import { productService, type ProductsResponse, createEmptyRatingCounts, type RatingCounts } from '../services/productService';
 import type { ShopFilters, SortBy, PaginationParams, ViewMode } from '../types/shop';
+import type { ProductRatingSummary } from '../types/review';
 
 interface ShopContextType {
   // Filters
@@ -27,6 +28,8 @@ interface ShopContextType {
   productsResponse: ProductsResponse | null;
   loading: boolean;
   error: string | null;
+  ratingCounts: RatingCounts;
+  productRatings: Record<number, ProductRatingSummary>;
   
   // Actions
   refreshProducts: () => void;
@@ -56,6 +59,8 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
   const [productsResponse, setProductsResponse] = useState<ProductsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [ratingCounts, setRatingCounts] = useState<RatingCounts>(createEmptyRatingCounts());
+  const [productRatings, setProductRatings] = useState<Record<number, ProductRatingSummary>>({});
 
   // Fetch products whenever filters, sorting, or pagination changes
   useEffect(() => {
@@ -81,6 +86,8 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
 
       const response = await productService.getFilteredProducts(queryParams);
       setProductsResponse(response);
+      setRatingCounts(response.ratingCounts);
+      setProductRatings((prev) => ({ ...prev, ...response.productRatings }));
       setPagination({
         page: response.currentPage,
         pageSize: response.pageSize,
@@ -155,6 +162,8 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
         productsResponse,
         loading,
         error,
+        ratingCounts,
+        productRatings,
         refreshProducts,
       }}
     >

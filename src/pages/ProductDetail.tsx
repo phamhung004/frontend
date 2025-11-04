@@ -213,6 +213,36 @@ const ProductDetail = () => {
     });
   }, [reviewStats]);
 
+  const renderStarRating = (rating: number, size: 'sm' | 'md' = 'md') => {
+    const clamped = Math.max(0, Math.min(5, rating));
+    const percentage = (clamped / 5) * 100;
+    const dimension = size === 'md' ? 'w-5 h-5' : 'w-4 h-4';
+
+    return (
+      <div className="relative flex">
+        <div className={`flex text-gray-300 ${size === 'md' ? 'gap-1' : ''}`}>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <svg key={`empty-${size}-${index}`} className={`${dimension}`} viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z" />
+            </svg>
+          ))}
+        </div>
+        <div
+          className={`absolute inset-0 overflow-hidden text-[#FCC605] ${size === 'md' ? 'flex' : ''}`}
+          style={{ width: `${percentage}%` }}
+        >
+          <div className={`flex ${size === 'md' ? 'gap-1' : ''}`}>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <svg key={`filled-${size}-${index}`} className={`${dimension}`} viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z" />
+              </svg>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const pricing = useMemo(() => {
     if (!product) {
       return null;
@@ -470,25 +500,9 @@ const ProductDetail = () => {
             </h1>
 
             {/* Rating & Reviews */}
-            <div className="flex items-center gap-4 mb-4">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, index) => {
-                  const starNumber = index + 1;
-                  const isFilled = (reviewStats?.averageRating ?? 0) >= starNumber;
-                  return (
-                    <svg
-                      key={starNumber}
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill={isFilled ? '#FCC605' : '#E5E7EB'}
-                    >
-                      <path d="M10 0l2.5 6.5H20l-5.5 4.5 2 6.5L10 13l-6.5 4.5 2-6.5L0 6.5h7.5z" />
-                    </svg>
-                  );
-                })}
-              </div>
-              <span className="text-[#646667]">
+            <div className="flex items-center gap-3 mb-4">
+              {renderStarRating(reviewStats?.averageRating ?? 0, 'md')}
+              <span className="text-sm text-[#646667] font-medium">
                 {reviewStatsLoading
                   ? 'Đang tải đánh giá...'
                   : reviewStatsError
@@ -885,17 +899,15 @@ const ProductDetail = () => {
               )}
               {!reviewStatsLoading && !reviewStatsError && reviewStats && reviewStats.totalReviews > 0 && (
                 ratingBreakdown.map((review) => (
-                  <div key={review.stars} className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-[#1C1D1D] w-[55px]">{review.stars} Sao</span>
-                      <div className="w-[202px] h-1 bg-[#DBE2E5] rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#9F86D9]"
-                          style={{ width: `${review.percentage}%` }}
-                        />
-                      </div>
+                  <div key={review.stars} className="flex items-center gap-3">
+                    <span className="text-sm text-[#1C1D1D] w-12">{review.stars} Sao</span>
+                    <div className="flex-1 h-2 bg-[#ECE6FF] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#9F86D9]"
+                        style={{ width: `${review.percentage}%` }}
+                      />
                     </div>
-                    <span className="text-xs text-[#1C1D1D] border border-[#DBE2E5] rounded px-2 py-1">
+                    <span className="text-xs text-[#646667] min-w-[80px] text-right">
                       {review.count} đánh giá
                     </span>
                   </div>

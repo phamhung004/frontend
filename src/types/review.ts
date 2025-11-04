@@ -30,6 +30,11 @@ export interface ReviewStats {
   };
 }
 
+export interface ProductRatingSummary {
+  averageRating: number;
+  totalReviews: number;
+}
+
 export interface ReviewRequest {
   productId: number;
   rating: number;
