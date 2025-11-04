@@ -26,10 +26,10 @@ const AccountSidebar = () => {
       ),
       submenu: [
         { path: '/account/profile', label: t('accountSidebar.profile') },
-        { path: '/account/bank', label: t('accountSidebar.bank') },
-        { path: '/account/address', label: t('accountSidebar.address') },
-        { path: '/account/password', label: t('accountSidebar.changePassword') },
-        { path: '/account/privacy', label: t('accountSidebar.privacy') },
+        // { path: '/account/bank', label: t('accountSidebar.bank') },
+        // { path: '/account/address', label: t('accountSidebar.address') },
+        // { path: '/account/password', label: t('accountSidebar.changePassword') },
+        // { path: '/account/privacy', label: t('accountSidebar.privacy') },
       ],
     },
     {

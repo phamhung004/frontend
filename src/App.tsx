@@ -92,10 +92,10 @@ function App() {
                     >
                       <Route path="notifications" element={<Notifications />} />
                       <Route path="profile" element={<Profile />} />
-                      <Route path="bank" element={<Profile />} />
-                      <Route path="address" element={<Profile />} />
-                      <Route path="password" element={<Profile />} />
-                      <Route path="privacy" element={<Profile />} />
+                      {/* <Route path="bank" element={<Profile />} /> */}
+                      {/* <Route path="address" element={<Profile />} /> */}
+                      {/* <Route path="password" element={<Profile />} /> */}
+                      {/* <Route path="privacy" element={<Profile />} /> */}
                       <Route path="orders" element={<Orders />} />
                     </Route>
                   </Routes>
