@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
 const Hero = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const heroImageRef = useRef<HTMLImageElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
@@ -197,18 +199,25 @@ const Hero = () => {
 
               {/* CTA Buttons */}
               <div ref={buttonsRef} className="flex items-center gap-[13.42px] md:gap-6 mt-6 md:mt-8">
-                <button className="relative group">
+                <button 
+                  className="relative group"
+                  onClick={() => navigate('/shop')}
+                >
                   <div className="absolute inset-0 bg-white border-[0.84px] md:border-2 border-gray-900 rounded-sm md:rounded transform translate-x-[2.52px] md:translate-x-1 translate-y-[2.52px] md:translate-y-1"></div>
                   <div className="relative bg-white border-[0.84px] md:border-2 border-gray-900 rounded-sm md:rounded px-2.5 md:px-6 py-1.5 md:py-3 font-bold text-[7.55px] md:text-base leading-[1.28] transition-transform group-hover:translate-x-0.5 group-hover:translate-y-0.5" style={{ fontFamily: 'DM Sans' }}>
                     {t('hero.viewAllDeals')}
                   </div>
                 </button>
-                <a href="#" className="flex items-center gap-1 md:gap-2 font-bold text-[7.55px] md:text-base text-gray-900 hover:text-[#9F86D9] leading-[1.28]" style={{ fontFamily: 'DM Sans' }}>
+                <button 
+                  onClick={() => navigate('/shop')}
+                  className="flex items-center gap-1 md:gap-2 font-bold text-[7.55px] md:text-base text-gray-900 hover:text-[#9F86D9] leading-[1.28]" 
+                  style={{ fontFamily: 'DM Sans' }}
+                >
                   <span>{t('hero.learnMore')}</span>
                   <svg className="w-[8.39px] md:w-5 h-[8.39px] md:h-5" fill="none" stroke="currentColor" strokeWidth="0.84" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
-                </a>
+                </button>
               </div>
             </div>
 

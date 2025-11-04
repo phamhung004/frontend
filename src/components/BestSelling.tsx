@@ -1,9 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '../utils/currency';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { productService } from '../services/productService';
+import type { Product } from '../types/product';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,22 +14,29 @@ const BestSelling = () => {
   const { t } = useTranslation();
   const bestSellingRef = useRef<HTMLDivElement>(null);
   const flashSaleRef = useRef<HTMLDivElement>(null);
+  const [bestSellingProducts, setBestSellingProducts] = useState<Product[]>([]);
+  const [flashSaleProducts, setFlashSaleProducts] = useState<Product[]>([]);
 
-  const bestSellingProducts = [
-    { id: 1, name: 'Tô màu Tung Tung Tung Sahur tập 2 nhiều nhân vật cho bé, Đồ chơi tô vẽ thủ công TB_51', price: 185.00, originalPrice: 196.00, rating: 5, image: '/images/vn-11134207-7ra0g-ma9aznjke548f6.webp' },
-    { id: 2, name: 'Bút lông viết bảng có đầu xóa, Bút tô vẽ xóa thông minh cho béToddler Turtleneck Sweater', price: 185.00, originalPrice: 196.00, rating: 5, image: '/images/butlong.webp' },
-    { id: 3, name: 'Cuốn tô màu Tung Tung Tung Sahur cho bé yêu, Tập tô thủ công giấy dày không lem', price: 185.00, originalPrice: 196.00, rating: 5, image: '/images/tungtungtung.webp' },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const allProducts = await productService.getAllProducts(true);
+        // Chia sản phẩm: 3 sản phẩm cho Best Selling và 3 sản phẩm cho Flash Sale
+        setBestSellingProducts(allProducts.slice(3, 6));
+        setFlashSaleProducts(allProducts.slice(6, 9));
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
 
-  const flashSaleProducts = [
-    { id: 1, name: 'Set 10 con dấu trẻ em để khen thưởng nhiều hình khác nhau cho bé', price: 185.00, originalPrice: 196.00, rating: 5, image: '/images/10condau.webp' },
-    { id: 2, name: 'Giấy ghi chú công việc hằng ngày màu pastel nhẹ nhàng cho học sinh', price: 185.00, originalPrice: 196.00, rating: 5, image: '/images/giayghichu.webp' },
-    { id: 3, name: 'Combo bảng cửu chương, Bộ cộng, trừ, nhân, chia cho bé được ép cứng và in 2 mặt', price: 185.00, originalPrice: 196.00, rating: 5, image: '/images/bangcuuchuong.webp' },
-  ];
+    fetchProducts();
+  }, []);
 
-  const ProductCard = ({ product }: { product: typeof bestSellingProducts[0] }) => {
+  const ProductCard = ({ product }: { product: Product }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
+    const price = product.finalPrice ?? product.salePrice ?? product.regularPrice;
+    const originalPrice = product.regularPrice;
 
     useEffect(() => {
       if (cardRef.current && imgRef.current) {
@@ -74,7 +83,7 @@ const BestSelling = () => {
         <div className="relative bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
           <img 
             ref={imgRef}
-            src={product.image} 
+            src={product.thumbnailUrl || '/images/placeholder.webp'} 
             alt={product.name}
             className="w-40 h-40 object-cover"
           />
@@ -88,7 +97,7 @@ const BestSelling = () => {
           
           {/* Rating */}
           <div className="flex items-center space-x-1">
-            {[...Array(product.rating)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <svg key={i} className="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">
                 <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
               </svg>
@@ -97,8 +106,10 @@ const BestSelling = () => {
 
           {/* Price */}
           <div className="flex items-center space-x-4">
-            <span className="text-lg text-[#9F86D9]">{formatCurrency(product.price)}</span>
-            <span className="text-lg text-gray-500 line-through">{formatCurrency(product.originalPrice)}</span>
+            <span className="text-lg text-[#9F86D9]">{formatCurrency(price)}</span>
+            {price < originalPrice && (
+              <span className="text-lg text-gray-500 line-through">{formatCurrency(originalPrice)}</span>
+            )}
           </div>
         </div>
       </div>

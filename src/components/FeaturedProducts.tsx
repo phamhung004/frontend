@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '../utils/currency';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { productService } from '../services/productService';
+import type { Product } from '../types/product';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,36 +14,21 @@ const FeaturedProducts = () => {
   const { t } = useTranslation();
   const sectionRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const products = [
-    {
-      id: 1,
-      name: 'Bộ tranh tô màu chủ đề Stitch dễ thương khổ A5 – đồ chơi giấy cho bé',
-      price: 185.0,
-      originalPrice: 196.0,
-      rating: 5,
-      image: '/images/stitch.webp',
-      badge: 'NEW',
-    },
-    {
-      id: 2,
-      name: 'Bút lông viết bảng có đầu xóa, Bút tô vẽ xóa thông minh cho bé',
-      price: 145.0,
-      originalPrice: 160.0,
-      rating: 5,
-      image: '/images/butlong.webp',
-      badge: 'NEW',
-    },
-    {
-      id: 3,
-      name: 'Bộ tranh tô màu chibi động vật dễ thương khổ A5 – đồ chơi giấy cho bé',
-      price: 125.0,
-      originalPrice: 140.0,
-      rating: 5,
-      image: '/images/dongvat.webp',
-      badge: 'NEW',
-    },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const allProducts = await productService.getAllProducts(true);
+        // Lấy 3 sản phẩm đầu tiên
+        setProducts(allProducts.slice(0, 3));
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -149,24 +136,28 @@ const FeaturedProducts = () => {
 
         {/* Products Grid */}
         <div ref={productsRef} className="grid grid-cols-1 md:grid-cols-3 gap-[30px] md:gap-8 max-w-[342px] md:max-w-none mx-auto md:mx-0">
-          {products.map((product) => (
-            <div 
-              key={product.id} 
-              className="product-card group cursor-pointer flex flex-col items-center"
-              onClick={() => navigate(`/product/${product.id}`)}
-            >
-              {/* Product Image */}
-              <div className="relative bg-[#EFF2F3] rounded-lg overflow-hidden mb-4 md:mb-6 w-full md:w-auto">
-                <img 
-                  src={product.image} 
-                  alt={product.name}
-                  className="w-full h-[397px] object-cover"
-                />
-                {product.badge && (
-                  <div className="product-badge absolute top-5 left-5 bg-[#EDA62A] text-white text-xs font-bold px-4 py-1.5 rounded-[28px]">
-                    {t('products.new')}
-                  </div>
-                )}
+          {products.map((product) => {
+            const price = product.finalPrice ?? product.salePrice ?? product.regularPrice;
+            const originalPrice = product.regularPrice;
+            
+            return (
+              <div 
+                key={product.id} 
+                className="product-card group cursor-pointer flex flex-col items-center"
+                onClick={() => navigate(`/product/${product.id}`)}
+              >
+                {/* Product Image */}
+                <div className="relative bg-[#EFF2F3] rounded-lg overflow-hidden mb-4 md:mb-6 w-full md:w-auto">
+                  <img 
+                    src={product.thumbnailUrl || '/images/placeholder.webp'} 
+                    alt={product.name}
+                    className="w-full h-[397px] object-cover"
+                  />
+                  {product.badgeLabel && (
+                    <div className="product-badge absolute top-5 left-5 bg-[#EDA62A] text-white text-xs font-bold px-4 py-1.5 rounded-[28px]">
+                      {product.badgeLabel}
+                    </div>
+                  )}
                 {/* Hover Icons - Desktop only */}
                 <div className="absolute right-5 top-5 hidden md:flex flex-col space-y-3 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#9F86D9] hover:text-white">
@@ -188,33 +179,36 @@ const FeaturedProducts = () => {
                 </div>
               </div>
 
-              {/* Product Info */}
-              <div className="text-center space-y-2 w-full md:w-auto max-w-[336px] min-w-0">
-                <h3 className="text-base md:text-lg font-bold text-gray-900 leading-[1.75] truncate" title={product.name} style={{ fontFamily: 'DM Sans' }}>
-                  {product.name}
-                </h3>
-                
-                {/* Rating - Hidden on mobile */}
-                <div className="hidden md:flex items-center justify-center space-x-1">
-                  {[...Array(product.rating)].map((_, i) => (
-                    <svg key={i} className="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                    </svg>
-                  ))}
-                </div>
+                {/* Product Info */}
+                <div className="text-center space-y-2 w-full md:w-auto max-w-[336px] min-w-0">
+                  <h3 className="text-base md:text-lg font-bold text-gray-900 leading-[1.75] truncate" title={product.name} style={{ fontFamily: 'DM Sans' }}>
+                    {product.name}
+                  </h3>
+                  
+                  {/* Rating - Hidden on mobile */}
+                  <div className="hidden md:flex items-center justify-center space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                      </svg>
+                    ))}
+                  </div>
 
-                {/* Price */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-[15px] md:gap-4">
-                  <span className="text-lg text-[#9F86D9] leading-[1.67]" style={{ fontFamily: 'DM Sans' }}>
-                    {formatCurrency(product.price)}
-                  </span>
-                  <span className="hidden md:inline text-lg text-gray-500 line-through" style={{ fontFamily: 'DM Sans' }}>
-                    {formatCurrency(product.originalPrice)}
-                  </span>
+                  {/* Price */}
+                  <div className="flex flex-col md:flex-row items-center justify-center gap-[15px] md:gap-4">
+                    <span className="text-lg text-[#9F86D9] leading-[1.67]" style={{ fontFamily: 'DM Sans' }}>
+                      {formatCurrency(price)}
+                    </span>
+                    {price < originalPrice && (
+                      <span className="hidden md:inline text-lg text-gray-500 line-through" style={{ fontFamily: 'DM Sans' }}>
+                        {formatCurrency(originalPrice)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
