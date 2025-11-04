@@ -4,18 +4,20 @@ import { formatCurrency } from '../../utils/currency';
 const RecentlyViewed = () => {
   const navigate = useNavigate();
 
+  // Use the same recommended items data as the sidebar in ProductDetail
   const products = [
-    { id: 1, name: 'Petite Plaid Skirt', price: 658.0, image: '/images/product-7.png', badge: 'Hot' },
-    { id: 2, name: 'Tiny Tulle Skirt', price: 35.62, image: '/images/product-2.png', badge: 'Hot' },
-    { id: 3, name: 'Tiny Tuxedo Shirt', price: 75.86, image: '/images/product-1.png', badge: 'Hot' },
-    { id: 4, name: 'Baby Bow Tie Romper', price: 12.53, image: '/images/product-3.png', badge: 'Hot' },
+    { id: 1, name: 'Tô màu chú chó Labrador dễ thương', price: 56.4, image: '/images/tomaucho.webp', badge: undefined },
+    { id: 2, name: 'Bảng chữ cái viết thường tiếng việt', price: 253.0, image: '/images/bangchucai.webp', badge: undefined },
+    { id: 3, name: 'Kéo Capybara an toàn cho bé', price: 150.6, image: '/images/keocapi.webp', badge: undefined },
+    { id: 4, name: 'Bảng cửu chương cho bé', price: 253.0, image: '/images/bangcuuchuong.webp', badge: undefined },
+
   ];
 
   return (
     <section className="py-16 border-t border-gray-200">
       <div className="max-w-[1434px] mx-auto px-4">
         <h2 className="text-[32px] font-bold uppercase text-[#9F86D9] tracking-tight mb-8">
-          Recently Viewed Products
+          Sản phẩm nổi bật
         </h2>
 
         <div className="grid grid-cols-4 gap-8">

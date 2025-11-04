@@ -28,9 +28,8 @@ export const productService = {
         params.published = queryParams.published;
       }
       
-      if (queryParams.categoryIds && queryParams.categoryIds.length > 0) {
-        // For now, we'll filter by the first category ID
-        // Backend would need to support multiple category filtering
+      if (queryParams.categoryIds && queryParams.categoryIds.length === 1) {
+        // Let the backend narrow down by a single category when possible
         params.categoryId = queryParams.categoryIds[0];
       }
       
@@ -41,6 +40,16 @@ export const productService = {
       // Fetch all products (since backend doesn't support pagination yet)
       const response = await api.get('/products', { params });
       let products: Product[] = response.data;
+
+      if (queryParams.categoryIds && queryParams.categoryIds.length > 0) {
+        const selectedCategoryIds = new Set(queryParams.categoryIds);
+        products = products.filter(product => {
+          if (product.categoryId == null) {
+            return false;
+          }
+          return selectedCategoryIds.has(product.categoryId);
+        });
+      }
 
       // Client-side filtering for price range
       if (queryParams.minPrice !== undefined || queryParams.maxPrice !== undefined) {

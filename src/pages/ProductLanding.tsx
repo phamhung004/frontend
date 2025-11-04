@@ -163,8 +163,39 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
     return Array.from(uniqueImages.values());
   }, [product]);
 
-  const heroImage = galleryImages[0]?.src ?? product?.thumbnailUrl ?? placeholderImage;
-  const heroImageAlt = galleryImages[0]?.alt ?? product?.name ?? 'Hình sản phẩm';
+  const heroImageData = useMemo(() => {
+    if (!product) {
+      return { src: placeholderImage, alt: 'Hình sản phẩm' };
+    }
+
+    if (selectedVariant?.imageUrl) {
+      return {
+        src: selectedVariant.imageUrl,
+        alt: selectedVariant.name ?? product.name ?? 'Hình sản phẩm',
+      };
+    }
+
+    const primaryMedia = product.media?.find((item) => item.isPrimary && item.imageUrl);
+    if (primaryMedia?.imageUrl) {
+      return {
+        src: primaryMedia.imageUrl,
+        alt: primaryMedia.altText ?? product.name ?? 'Hình sản phẩm',
+      };
+    }
+
+    if (galleryImages[0]) {
+      return galleryImages[0];
+    }
+
+    if (product.thumbnailUrl) {
+      return { src: product.thumbnailUrl, alt: product.name ?? 'Hình sản phẩm' };
+    }
+
+    return { src: placeholderImage, alt: 'Hình sản phẩm' };
+  }, [galleryImages, product, selectedVariant]);
+
+  const heroImage = heroImageData.src;
+  const heroImageAlt = heroImageData.alt;
 
   const pricing = useMemo(() => {
     if (!product) {
@@ -381,7 +412,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
           <div className="max-w-[1434px] mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
-                <img src={heroImage} alt={heroImageAlt} className="w-16 h-16 rounded-lg object-cover shadow-md" />
+                <img src={heroImage} alt={heroImageAlt} className="w-16 h-16 rounded-lg object-contain shadow-md" />
                 <div>
                   <p className="font-bold text-[#1C1D1D] text-lg">{product.name}</p>
                   <p className="text-[#9F86D9] font-bold text-xl">{formatCurrency(pricing?.finalPrice ?? 0)}</p>
@@ -514,7 +545,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
                 <img
                   src={heroImage}
                   alt={heroImageAlt}
-                  className="w-full h-[600px] object-cover"
+                  className="w-full h-[600px] object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
               </div>
@@ -796,7 +827,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
                 <img
                   src={heroImage}
                   alt={heroImageAlt}
-                  className="w-full h-full object-cover rounded-2xl shadow-xl"
+                  className="w-full h-full object-contain rounded-2xl shadow-xl"
                 />
                 <div className="absolute bottom-6 left-6 right-6 bg-white rounded-xl p-4 shadow-lg">
                   <p className="text-center font-bold text-[#1C1D1D]">

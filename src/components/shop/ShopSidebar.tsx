@@ -66,7 +66,10 @@ const ShopSidebar = () => {
   ];
 
   // Handle category toggle
-  const handleCategoryClick = (categoryId: number) => {
+  const handleCategoryClick = (categoryId: number | undefined) => {
+    if (typeof categoryId !== 'number') {
+      return;
+    }
     toggleCategory(categoryId);
   };
 
@@ -145,20 +148,35 @@ const ShopSidebar = () => {
               : categories.length === 0
                 ? <p className="text-sm text-gray-500">{noCategoriesMessage}</p>
                 : categories.map((category) => {
-                    const isSelected = category.id !== undefined && filters.categoryIds.includes(category.id);
+                    if (category.id == null) {
+                      return null;
+                    }
+                    const isSelected = filters.categoryIds.includes(category.id);
                     return (
                       <div
-                        key={category.id ?? category.slug}
+                        key={category.id}
                         className={`flex items-center justify-between cursor-pointer transition-colors ${
                           isSelected ? 'text-[#9F86D9] font-medium' : 'hover:text-[#9F86D9]'
                         }`}
-                        onClick={() => category.id !== undefined && handleCategoryClick(category.id)}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleCategoryClick(category.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            handleCategoryClick(category.id);
+                          }
+                        }}
                       >
                         <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => {}}
+                            onChange={(event) => {
+                              event.stopPropagation();
+                              handleCategoryClick(category.id);
+                            }}
+                            onClick={(event) => event.stopPropagation()}
                             className="w-4 h-4 text-[#9F86D9] border-gray-300 rounded focus:ring-[#9F86D9]"
                           />
                           <span className="text-base">{category.name}</span>

@@ -27,6 +27,7 @@ const Header = () => {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const userDropdownTimerRef = useRef<number | null>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   
@@ -58,7 +59,12 @@ const Header = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      if (userDropdownTimerRef.current) {
+        window.clearTimeout(userDropdownTimerRef.current);
+      }
+    };
   }, []);
 
   // Search functionality
@@ -84,6 +90,25 @@ const Header = () => {
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchKeyword]);
+
+  const handleUserMouseEnter = () => {
+    if (userDropdownTimerRef.current) {
+      window.clearTimeout(userDropdownTimerRef.current);
+      userDropdownTimerRef.current = null;
+    }
+    setShowUserDropdown(true);
+  };
+
+  const handleUserMouseLeave = () => {
+    if (userDropdownTimerRef.current) {
+      window.clearTimeout(userDropdownTimerRef.current);
+    }
+
+    userDropdownTimerRef.current = window.setTimeout(() => {
+      setShowUserDropdown(false);
+      userDropdownTimerRef.current = null;
+    }, 150);
+  };
 
   const handleSearchClose = () => {
     setShowSearchDropdown(false);
@@ -117,7 +142,7 @@ const Header = () => {
             <a href="#" className="text-lg text-gray-900 hover:text-[#9F86D9]" style={{ fontFamily: 'Lobster Two' }}>{t('header.about')}</a>
             <a href="/shop" className="text-lg text-gray-900 hover:text-[#9F86D9]" style={{ fontFamily: 'Lobster Two' }}>{t('header.shop')}</a>
             <a href="#" className="text-lg text-gray-900 hover:text-[#9F86D9]" style={{ fontFamily: 'Lobster Two' }}>{t('header.pages')}</a>
-            <a href="/blog" className="text-lg text-gray-900 hover:text-[#9F86D9]" style={{ fontFamily: 'Lobster Two' }}>{t('header.blog')}</a>
+            <a href="/#" className="text-lg text-gray-900 hover:text-[#9F86D9]" style={{ fontFamily: 'Lobster Two' }}>{t('header.blog')}</a>
             <a href="#" className="text-lg text-gray-900 hover:text-[#9F86D9]" style={{ fontFamily: 'Lobster Two' }}>{t('header.contact')}</a>
           </nav>
 
@@ -168,8 +193,8 @@ const Header = () => {
               <div 
                 ref={userDropdownRef}
                 className="hidden md:block relative"
-                onMouseEnter={() => setShowUserDropdown(true)}
-                onMouseLeave={() => setShowUserDropdown(false)}
+                onMouseEnter={handleUserMouseEnter}
+                onMouseLeave={handleUserMouseLeave}
               >
                 <button 
                   className="text-gray-900 hover:text-[#9F86D9] transition-colors flex items-center gap-2"
