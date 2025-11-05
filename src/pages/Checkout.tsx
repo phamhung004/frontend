@@ -698,7 +698,7 @@ const Checkout = () => {
       </div>
 
       <div className="max-w-[1434px] mx-auto px-4 mb-8 sm:mb-12 lg:mb-16">
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 lg:items-start">
           <div className="flex-1">
             <a
               href="/cart"
@@ -1085,7 +1085,7 @@ const Checkout = () => {
             </form>
           </div>
 
-          <div className="w-full lg:w-[533px]">
+          <div className="w-full lg:w-[533px] lg:sticky lg:top-8 self-start mt-[170px]">
             <div className="border border-[#DBE2E5] rounded p-5 sm:p-8 lg:p-10">
               <div className="mb-4 sm:mb-6">
                 <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#DBE2E5]">
