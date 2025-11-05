@@ -9,7 +9,11 @@ import { useShop } from '../../contexts/ShopContext';
 import type { SortBy } from '../../types/shop';
 import Pagination from './Pagination';
 
-const ProductGrid = () => {
+interface ProductGridProps {
+  onFilterClick?: () => void;
+}
+
+const ProductGrid = ({ onFilterClick }: ProductGridProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -179,16 +183,28 @@ const ProductGrid = () => {
   return (
     <div className="flex-1">
       {/* Filter Bar */}
-      <div className="mb-6 pb-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-8">
+      <div className="mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+          <div className="flex items-center gap-3 sm:gap-8 w-full sm:w-auto overflow-x-auto">
+            {/* Mobile Filter Button */}
+            <button
+              onClick={onFilterClick}
+              className="lg:hidden flex items-center gap-2 px-4 py-2 bg-[#9F86D9] text-white rounded-lg text-sm font-medium hover:bg-[#8a6fc9] transition-colors flex-shrink-0"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span>Bộ lọc</span>
+            </button>
+
             {/* Sort Dropdown */}
-            <div className="relative" ref={sortDropdownRef}>
+            <div className="relative flex-shrink-0" ref={sortDropdownRef}>
               <button 
-                className="flex items-center gap-2 text-sm text-gray-900 hover:text-[#9F86D9]"
+                className="flex items-center gap-2 text-xs sm:text-sm text-gray-900 hover:text-[#9F86D9] whitespace-nowrap"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
               >
-                <span>{currentSortLabel}</span>
+                <span className="hidden sm:inline">{currentSortLabel}</span>
+                <span className="sm:hidden">Sắp xếp</span>
                 <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -213,13 +229,13 @@ const ProductGrid = () => {
               )}
             </div>
             {/* Item Count */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-900">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-xs sm:text-sm text-gray-900 whitespace-nowrap">
                 {productsResponse?.totalItems || 0} {t('shop.items')}
               </span>
             </div>
             {/* View Mode Toggle */}
-            <div className="flex gap-2">
+            <div className="hidden sm:flex gap-2 flex-shrink-0">
               <button 
                 className={`p-2 border rounded transition-colors ${
                   viewMode === 'grid' 
@@ -248,7 +264,7 @@ const ProductGrid = () => {
               </button>
             </div>
           </div>
-          <p className="text-base text-gray-900">
+          <p className="text-xs sm:text-sm md:text-base text-gray-900 w-full sm:w-auto text-left sm:text-right">
             {productsResponse && productsResponse.totalItems > 0
               ? t('shop.showingResults', {
                   from: (productsResponse.currentPage - 1) * productsResponse.pageSize + 1,
@@ -297,7 +313,7 @@ const ProductGrid = () => {
 
       {/* Product Grid/List */}
       {!loading && !error && products.length > 0 && (
-        <div className={viewMode === 'grid' ? 'grid grid-cols-3 gap-8 mb-12' : 'space-y-6 mb-12'}>
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-12' : 'space-y-4 sm:space-y-6 mb-12'}>
           {products.map((product) => {
             const isPdfProduct = product.productType === 'PDF';
             
@@ -306,10 +322,10 @@ const ProductGrid = () => {
               return (
                 <div
                   key={product.id}
-                  className="flex gap-6 p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
+                  className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-3 sm:p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => navigate(isPdfProduct ? `/product-pdf/${product.id}` : `/product/${product.id}`)}
                 >
-                  <div className="relative w-48 h-48 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="relative w-full sm:w-48 h-48 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                     <img
                       src={product.thumbnailUrl || '/images/placeholder.webp'}
                       alt={product.name}
@@ -380,23 +396,23 @@ const ProductGrid = () => {
                 className="group cursor-pointer"
                 onClick={() => navigate(isPdfProduct ? `/product-pdf/${product.id}` : `/product/${product.id}`)}
               >
-                <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-6">
+                <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 sm:mb-6">
                   <img
                     src={product.thumbnailUrl || '/images/placeholder.webp'}
                     alt={product.name}
-                    className="w-full h-[397px] object-cover"
+                    className="w-full h-48 sm:h-64 md:h-80 lg:h-[397px] object-cover"
                   />
                   {product.badgeLabel && (
-                    <div className={`absolute top-5 left-5 ${getBadgeColor(product.badgeLabel)} text-white text-xs font-bold px-4 py-1.5 rounded`}>
+                    <div className={`absolute top-3 left-3 sm:top-5 sm:left-5 ${getBadgeColor(product.badgeLabel)} text-white text-xs font-bold px-3 py-1 sm:px-4 sm:py-1.5 rounded`}>
                       {product.badgeLabel}
                     </div>
                   )}
                   {/* Hover Actions */}
-                  <div className="absolute right-5 top-5 flex flex-col space-y-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute right-3 top-3 sm:right-5 sm:top-5 flex flex-col space-y-2 sm:space-y-3 opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => handleWishlistToggle(e, product.id)}
                       disabled={togglingWishlist === product.id}
-                      className={`w-10 h-10 bg-white rounded-full flex items-center justify-center transition-colors border border-gray-200 ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center transition-colors border border-gray-200 ${
                         isInWishlist(product.id)
                           ? 'text-[#9F86D9] ring-1 ring-[#9F86D9]'
                           : 'hover:bg-[#9F86D9] hover:text-white'
@@ -413,28 +429,28 @@ const ProductGrid = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                     </button>
-                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#9F86D9] hover:text-white">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <button className="hidden sm:flex w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full items-center justify-center hover:bg-[#9F86D9] hover:text-white">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                     </button>
-                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#9F86D9] hover:text-white">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <button className="hidden sm:flex w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full items-center justify-center hover:bg-[#9F86D9] hover:text-white">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                       </svg>
                     </button>
                   </div>
                   {/* Add to Cart Button */}
-                  <button className="absolute bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-40px)] bg-[#9F86D9] text-white font-bold py-3 px-6 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button className="hidden md:block absolute bottom-3 sm:bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-24px)] sm:w-[calc(100%-40px)] bg-[#9F86D9] text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded text-sm sm:text-base opacity-0 group-hover:opacity-100 transition-opacity">
                     {t('shop.addToCart')}
                   </button>
                 </div>
-                <div className="text-center">
-                  <h3 className="font-bold text-base mb-2 truncate" title={product.name}>
+                <div className="text-center px-2">
+                  <h3 className="font-bold text-sm sm:text-base mb-2 truncate" title={product.name}>
                     {product.name}
                   </h3>
-                  <div className="flex items-center gap-2 justify-center mb-2">
+                  <div className="flex items-center gap-1 sm:gap-2 justify-center mb-2">
                     {renderRatingStars(productRatings[product.id]?.averageRating ?? 0)}
                     <span className="text-xs text-gray-500">
                       {productRatings[product.id]?.totalReviews ?? 0}{' '}
@@ -442,13 +458,13 @@ const ProductGrid = () => {
                     </span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <p className="text-[#9F86D9] font-normal text-lg">
+                    <p className="text-[#9F86D9] font-normal text-base sm:text-lg">
                       {isPdfProduct && getDisplayPrice(product) === 0
                         ? 'MIỄN PHÍ'
                         : formatCurrency(getDisplayPrice(product))}
                     </p>
                     {getOriginalPrice(product) !== null && (
-                      <p className="text-sm text-gray-400 line-through">
+                      <p className="text-xs sm:text-sm text-gray-400 line-through">
                         {formatCurrency(getOriginalPrice(product) ?? 0)}
                       </p>
                     )}

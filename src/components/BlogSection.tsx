@@ -127,24 +127,24 @@ const BlogSection = () => {
   }, []);
 
   return (
-    <section className="py-16">
+    <section className="py-8 sm:py-12 lg:py-16">
       <div className="max-w-7xl mx-auto px-4">
         {/* Section Header */}
-        <div ref={headerRef} className="text-center mb-12">
-          <h2 className="text-[32px] font-bold uppercase text-[#9F86D9] tracking-tight mb-4" style={{ fontFamily: 'Lobster Two' }}>
+        <div ref={headerRef} className="text-center mb-8 sm:mb-10 lg:mb-12">
+          <h2 className="text-xl sm:text-2xl lg:text-[32px] font-bold uppercase text-[#9F86D9] tracking-tight mb-3 sm:mb-4" style={{ fontFamily: 'Lobster Two' }}>
             Tin Tức và Sự Kiện Mới Nhất
           </h2>
-          <p className="text-lg text-gray-500 max-w-lg mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-gray-500 max-w-lg mx-auto px-4">
             Đừng bỏ lỡ những tin tức khuyến mãi hấp dẫn hoặc sự kiện sắp diễn ra trong hệ thống cửa hàng của chúng tôi
           </p>
         </div>
 
         {/* Blog Grid */}
-        <div ref={blogGridRef} className="grid grid-cols-3 gap-8">
+        <div ref={blogGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {blogPosts.map((post) => (
             <div key={post.id} className="blog-card group">
               {/* Blog Image */}
-              <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-6 h-[336px]">
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 sm:mb-6 h-48 sm:h-64 lg:h-[336px]">
                 <img 
                   src={post.image} 
                   alt={post.title}
@@ -152,28 +152,28 @@ const BlogSection = () => {
                 />
                 
                 {/* Date Badge */}
-                <div className="blog-badge absolute top-4 left-4 bg-white rounded px-4 py-2 text-center">
-                  <div className="text-2xl font-bold text-[#9F86D9]">{post.date.day}</div>
-                  <div className="text-base text-gray-900">{post.date.month}</div>
+                <div className="blog-badge absolute top-3 left-3 sm:top-4 sm:left-4 bg-white rounded px-3 py-1.5 sm:px-4 sm:py-2 text-center">
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-[#9F86D9]">{post.date.day}</div>
+                  <div className="text-xs sm:text-sm lg:text-base text-gray-900">{post.date.month}</div>
                 </div>
               </div>
 
               {/* Blog Content */}
-              <div className="space-y-4">
-                <h3 className={`text-xl font-bold ${post.featured ? 'text-[#9F86D9]' : 'text-gray-900'} leading-tight`}>
+              <div className="space-y-2 sm:space-y-3 lg:space-y-4">
+                <h3 className={`text-base sm:text-lg lg:text-xl font-bold ${post.featured ? 'text-[#9F86D9]' : 'text-gray-900'} leading-tight line-clamp-2`}>
                   {post.title}
                 </h3>
-                <p className="text-lg text-gray-500 line-clamp-3">
+                <p className="text-sm sm:text-base lg:text-lg text-gray-500 line-clamp-2 sm:line-clamp-3">
                   {post.excerpt}
                 </p>
                 <a 
                   href="#" 
-                  className={`inline-flex items-center space-x-3 font-bold text-lg ${
+                  className={`inline-flex items-center space-x-2 sm:space-x-3 font-bold text-sm sm:text-base lg:text-lg ${
                     post.featured ? 'text-[#9F86D9]' : 'text-gray-900'
                   }`}
                 >
                   <span>Đọc tiếp</span>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </a>

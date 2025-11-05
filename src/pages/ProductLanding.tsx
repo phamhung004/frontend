@@ -408,21 +408,21 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
     <div className="min-h-screen bg-white relative overflow-x-hidden">
       {/* Fixed CTA Bar - Shows after scroll */}
       {showFixedCTA && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-50 border-t-4 border-[#9F86D9]">
-          <div className="max-w-[1434px] mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <img src={heroImage} alt={heroImageAlt} className="w-16 h-16 rounded-lg object-contain shadow-md" />
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-50 border-t-2 sm:border-t-4 border-[#9F86D9]">
+          <div className="max-w-[1434px] mx-auto px-3 sm:px-4 py-2 sm:py-4">
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-6">
+                <img src={heroImage} alt={heroImageAlt} className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-contain shadow-md" />
                 <div>
-                  <p className="font-bold text-[#1C1D1D] text-lg">{product.name}</p>
-                  <p className="text-[#9F86D9] font-bold text-xl">{formatCurrency(pricing?.finalPrice ?? 0)}</p>
+                  <p className="font-bold text-[#1C1D1D] text-xs sm:text-base lg:text-lg line-clamp-1">{product.name}</p>
+                  <p className="text-[#9F86D9] font-bold text-sm sm:text-lg lg:text-xl">{formatCurrency(pricing?.finalPrice ?? 0)}</p>
                 </div>
               </div>
               <button
                 onClick={scrollToOrder}
-                className="px-8 py-4 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white rounded-lg font-bold text-lg hover:shadow-xl transition-all hover:scale-105"
+                className="px-3 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white rounded-lg font-bold text-xs sm:text-sm lg:text-lg hover:shadow-xl transition-all hover:scale-105 whitespace-nowrap"
               >
-                🔥 ĐẶT HÀNG NGAY{pricing && pricing.discountAmount > 0 ? ` - TIẾT KIỆM ${formatCurrency(pricing.discountAmount)}` : ''}
+                🔥 <span className="hidden sm:inline">ĐẶT HÀNG NGAY</span><span className="sm:hidden">MUA</span>{pricing && pricing.discountAmount > 0 ? ` - ${formatCurrency(pricing.discountAmount)}` : ''}
               </button>
             </div>
           </div>
@@ -430,23 +430,23 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       )}
 
       {/* Hero Section - Above The Fold */}
-      <section className="relative bg-gradient-to-br from-[#FFF9E5] via-[#F5F2FF] to-[#E5F9FF] py-16 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-[#FFF9E5] via-[#F5F2FF] to-[#E5F9FF] py-8 sm:py-12 lg:py-16 overflow-hidden">
         {/* Decorative Elements */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-[#FCC605] rounded-full opacity-20 animate-bounce"></div>
-        <div className="absolute bottom-10 right-10 w-32 h-32 bg-[#9F86D9] rounded-full opacity-10 animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-[#39F5C4] rounded-full opacity-20"></div>
+        <div className="absolute top-5 left-5 sm:top-10 sm:left-10 w-12 h-12 sm:w-20 sm:h-20 bg-[#FCC605] rounded-full opacity-20 animate-bounce"></div>
+        <div className="absolute bottom-5 right-5 sm:bottom-10 sm:right-10 w-16 h-16 sm:w-32 sm:h-32 bg-[#9F86D9] rounded-full opacity-10 animate-pulse"></div>
+        <div className="hidden sm:block absolute top-1/2 left-1/4 w-16 h-16 bg-[#39F5C4] rounded-full opacity-20"></div>
 
         <div className="max-w-[1434px] mx-auto px-4 relative z-10">
           {/* Urgency Banner */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white px-8 py-3 rounded-full shadow-xl animate-pulse">
-              <span className="text-2xl">🔥</span>
-              <span className="font-bold text-lg">FLASH SALE HÔM NAY - GIẢM ĐẾN 21%</span>
-              <span className="text-2xl">🔥</span>
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full shadow-xl animate-pulse">
+              <span className="text-lg sm:text-2xl">🔥</span>
+              <span className="font-bold text-xs sm:text-sm lg:text-lg">FLASH SALE HÔM NAY - GIẢM ĐẾN 21%</span>
+              <span className="text-lg sm:text-2xl">🔥</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             {/* Left - Hero Content */}
             <div className="space-y-8">
               {/* Headline */}
@@ -462,38 +462,38 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
               </div>
 
               {/* Social Proof */}
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                <div className="flex -space-x-2 sm:-space-x-3">
                   {['👧', '👦', '👶', '👨', '👩'].map((emoji, i) => (
-                    <div key={i} className="w-12 h-12 bg-gradient-to-br from-[#9F86D9] to-[#B79FE8] rounded-full border-4 border-white flex items-center justify-center text-xl shadow-md">
+                    <div key={i} className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#9F86D9] to-[#B79FE8] rounded-full border-2 sm:border-4 border-white flex items-center justify-center text-base sm:text-xl shadow-md">
                       {emoji}
                     </div>
                   ))}
                 </div>
                 <div>
-                  <p className="text-[#1C1D1D] font-bold text-lg">342+ gia đình đã mua</p>
+                  <p className="text-[#1C1D1D] font-bold text-sm sm:text-base lg:text-lg">342+ gia đình đã mua</p>
                   <div className="flex items-center gap-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <span key={i} className="text-[#FCC605] text-lg">★</span>
+                        <span key={i} className="text-[#FCC605] text-sm sm:text-base lg:text-lg">★</span>
                       ))}
                     </div>
-                    <span className="text-[#646667] font-medium">4.9/5 (128 đánh giá)</span>
+                    <span className="text-[#646667] font-medium text-xs sm:text-sm">4.9/5 (128 đánh giá)</span>
                   </div>
                 </div>
               </div>
 
               {/* Key Benefits */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {[
                   { icon: '✅', text: 'Giấy dày, không lem' },
                   { icon: '✅', text: 'An toàn cho bé' },
                   { icon: '✅', text: 'Nhiều hình dễ thương' },
                   { icon: '✅', text: 'Miễn phí vận chuyển' },
                 ].map((benefit, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-md">
-                    <span className="text-2xl">{benefit.icon}</span>
-                    <span className="font-medium text-[#1C1D1D]">{benefit.text}</span>
+                  <div key={i} className="flex items-center gap-2 sm:gap-3 bg-white rounded-xl px-3 sm:px-4 py-2 sm:py-3 shadow-md">
+                    <span className="text-xl sm:text-2xl">{benefit.icon}</span>
+                    <span className="font-medium text-[#1C1D1D] text-sm sm:text-base">{benefit.text}</span>
                   </div>
                 ))}
               </div>
@@ -501,31 +501,31 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
               {/* CTA Button */}
               <button
                 onClick={scrollToOrder}
-                className="w-full py-6 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white rounded-2xl font-bold text-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all relative overflow-hidden group"
+                className="w-full py-4 sm:py-5 lg:py-6 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-xl lg:text-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all relative overflow-hidden group"
               >
-                <span className="relative z-10 flex items-center justify-center gap-3">
+                <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
                   <span>
                     🛒 ĐẶT HÀNG NGAY
-                    {pricing && pricing.discountAmount > 0 ? ` - TIẾT KIỆM ${formatCurrency(pricing.discountAmount)}` : ''}
+                    {pricing && pricing.discountAmount > 0 ? ` - ${formatCurrency(pricing.discountAmount)}` : ''}
                   </span>
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#F25E17] to-[#E35946] opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </button>
 
               {/* Countdown Timer */}
-              <div className="bg-white rounded-2xl p-6 shadow-xl border-2 border-[#FCC605]">
-                <p className="text-center text-[#646667] font-medium mb-3">⏰ Ưu đãi kết thúc sau:</p>
-                <div className="flex justify-center gap-4">
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl border-2 border-[#FCC605]">
+                <p className="text-center text-[#646667] font-medium text-sm sm:text-base mb-3">⏰ Ưu đãi kết thúc sau:</p>
+                <div className="flex justify-center gap-2 sm:gap-4">
                   {[
                     { label: 'Giờ', value: timeLeft.hours },
                     { label: 'Phút', value: timeLeft.minutes },
                     { label: 'Giây', value: timeLeft.seconds },
                   ].map((time, i) => (
                     <div key={i} className="text-center">
-                      <div className="bg-gradient-to-br from-[#E35946] to-[#F25E17] text-white text-4xl font-bold w-20 h-20 rounded-xl flex items-center justify-center shadow-lg">
+                      <div className="bg-gradient-to-br from-[#E35946] to-[#F25E17] text-white text-2xl sm:text-3xl lg:text-4xl font-bold w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
                         {String(time.value).padStart(2, '0')}
                       </div>
-                      <p className="text-sm text-[#646667] font-medium mt-2">{time.label}</p>
+                      <p className="text-xs sm:text-sm text-[#646667] font-medium mt-1 sm:mt-2">{time.label}</p>
                     </div>
                   ))}
                 </div>
@@ -533,30 +533,30 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
             </div>
 
             {/* Right - Product Hero Image */}
-            <div className="relative">
+            <div className="relative mt-8 lg:mt-0">
               {/* Badge */}
-              <div className="absolute -top-6 -right-6 z-20 bg-gradient-to-br from-[#E35946] to-[#F25E17] text-white rounded-full w-32 h-32 flex flex-col items-center justify-center shadow-2xl rotate-12 animate-bounce">
-                <span className="text-3xl font-bold">-21%</span>
-                <span className="text-sm">GIẢM GIÁ</span>
+              <div className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 z-20 bg-gradient-to-br from-[#E35946] to-[#F25E17] text-white rounded-full w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 flex flex-col items-center justify-center shadow-2xl rotate-12 animate-bounce">
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold">-21%</span>
+                <span className="text-xs sm:text-sm">GIẢM GIÁ</span>
               </div>
 
               {/* Main Image */}
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-500">
+              <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-500">
                 <img
                   src={heroImage}
                   alt={heroImageAlt}
-                  className="w-full h-[600px] object-contain"
+                  className="w-full h-64 sm:h-96 lg:h-[600px] object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
               </div>
 
               {/* Floating Stats */}
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl px-6 py-4 shadow-xl">
-                <p className="text-[#646667] text-sm mb-1">Đã bán</p>
-                <p className="text-[#9F86D9] text-3xl font-bold">342+</p>
+              <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white rounded-xl sm:rounded-2xl px-3 py-2 sm:px-6 sm:py-4 shadow-xl">
+                <p className="text-[#646667] text-xs sm:text-sm mb-1">Đã bán</p>
+                <p className="text-[#9F86D9] text-xl sm:text-2xl lg:text-3xl font-bold">342+</p>
               </div>
 
-              <div className="absolute top-1/2 -right-6 bg-white rounded-2xl px-6 py-4 shadow-xl">
+              <div className="hidden sm:block absolute top-1/2 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl px-3 py-2 sm:px-6 sm:py-4 shadow-xl">
                 <p className="text-[#646667] text-sm mb-1">Đánh giá</p>
                 <p className="text-[#FCC605] text-3xl font-bold">4.9★</p>
               </div>
@@ -566,18 +566,18 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       </section>
 
       {/* Problem Statement Section */}
-      <section className="py-20 bg-white">
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-[1434px] mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-[#1C1D1D] mb-6">
+          <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-[#1C1D1D] mb-4 sm:mb-6">
               Bạn Đang Gặp Những Vấn Đề Này?
             </h2>
-            <p className="text-xl text-[#646667] max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg lg:text-xl text-[#646667] max-w-3xl mx-auto px-4">
               Nhiều ba mẹ đang lo lắng về sự phát triển sáng tạo và kỹ năng của con...
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {[
               {
                 icon: '😟',
@@ -595,9 +595,9 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
                 description: 'Thiếu cơ hội để phát triển khả năng nghệ thuật và tư duy sáng tạo'
               },
             ].map((problem, i) => (
-              <div key={i} className="bg-[#EFF2F3] rounded-2xl p-8 text-center hover:bg-[#F5F2FF] transition-all">
-                <div className="text-6xl mb-4">{problem.icon}</div>
-                <h3 className="text-xl font-bold text-[#1C1D1D] mb-3">{problem.title}</h3>
+              <div key={i} className="bg-[#EFF2F3] rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center hover:bg-[#F5F2FF] transition-all">
+                <div className="text-4xl sm:text-5xl lg:text-6xl mb-3 sm:mb-4">{problem.icon}</div>
+                <h3 className="text-lg sm:text-xl font-bold text-[#1C1D1D] mb-2 sm:mb-3">{problem.title}</h3>
                 <p className="text-[#646667]">{problem.description}</p>
               </div>
             ))}
@@ -613,19 +613,19 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       </section>
 
       {/* Solution/Benefits Section */}
-      <section className="py-20 bg-gradient-to-br from-[#F5F2FF] to-[#FFF9E5]">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-[#F5F2FF] to-[#FFF9E5]">
         <div className="max-w-[1434px] mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-[#1C1D1D] mb-6">
+          <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-[#1C1D1D] mb-4 sm:mb-6 px-4">
               {product.name} -
               <span className="text-[#9F86D9] block">Giải Pháp Hoàn Hảo!</span>
             </h2>
-            <p className="text-xl text-[#646667] max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg lg:text-xl text-[#646667] max-w-3xl mx-auto px-4">
               Sản phẩm được thiết kế đặc biệt giúp phát triển toàn diện kỹ năng cho bé
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
             {[
               {
                 icon: '🎨',

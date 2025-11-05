@@ -122,20 +122,20 @@ const FeaturedProducts = () => {
   }, []);
 
   return (
-    <section className="py-8 md:py-16">
-      <div className="max-w-7xl mx-auto px-4 md:px-4">
+    <section className="py-8 sm:py-12 lg:py-16">
+      <div className="max-w-7xl mx-auto px-4">
         {/* Section Title */}
-        <div ref={sectionRef} className="text-center mb-6 md:mb-12 flex flex-col items-center gap-1.5 md:gap-2">
-          <h3 className="text-[12.3px] md:text-base font-normal text-[#EDA62A] leading-[1.6] tracking-normal" style={{ fontFamily: 'DM Sans' }}>
+        <div ref={sectionRef} className="text-center mb-6 sm:mb-10 lg:mb-12 flex flex-col items-center gap-1.5 sm:gap-2">
+          <h3 className="text-xs sm:text-sm lg:text-base font-normal text-[#EDA62A] leading-[1.6] tracking-normal" style={{ fontFamily: 'DM Sans' }}>
             {t('products.newInStore')}
           </h3>
-          <h2 className="text-lg md:text-[32px] font-normal md:font-bold uppercase text-[#9F86D9] tracking-tight leading-[1.22]" style={{ fontFamily: 'Lobster Two' }}>
+          <h2 className="text-xl sm:text-2xl lg:text-[32px] font-normal lg:font-bold uppercase text-[#9F86D9] tracking-tight leading-[1.22]" style={{ fontFamily: 'Lobster Two' }}>
             {t('products.newArrival')}
           </h2>
         </div>
 
         {/* Products Grid */}
-        <div ref={productsRef} className="grid grid-cols-1 md:grid-cols-3 gap-[30px] md:gap-8 max-w-[342px] md:max-w-none mx-auto md:mx-0">
+        <div ref={productsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {products.map((product) => {
             const price = product.finalPrice ?? product.salePrice ?? product.regularPrice;
             const originalPrice = product.regularPrice;
@@ -147,19 +147,19 @@ const FeaturedProducts = () => {
                 onClick={() => navigate(`/product/${product.id}`)}
               >
                 {/* Product Image */}
-                <div className="relative bg-[#EFF2F3] rounded-lg overflow-hidden mb-4 md:mb-6 w-full md:w-auto">
+                <div className="relative bg-[#EFF2F3] rounded-lg overflow-hidden mb-4 sm:mb-6 w-full">
                   <img 
                     src={product.thumbnailUrl || '/images/placeholder.webp'} 
                     alt={product.name}
-                    className="w-full h-[397px] object-cover"
+                    className="w-full h-64 sm:h-80 lg:h-[397px] object-cover"
                   />
                   {product.badgeLabel && (
-                    <div className="product-badge absolute top-5 left-5 bg-[#EDA62A] text-white text-xs font-bold px-4 py-1.5 rounded-[28px]">
+                    <div className="product-badge absolute top-3 left-3 sm:top-5 sm:left-5 bg-[#EDA62A] text-white text-xs font-bold px-3 py-1 sm:px-4 sm:py-1.5 rounded-[28px]">
                       {product.badgeLabel}
                     </div>
                   )}
                 {/* Hover Icons - Desktop only */}
-                <div className="absolute right-5 top-5 hidden md:flex flex-col space-y-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute right-3 top-3 sm:right-5 sm:top-5 hidden lg:flex flex-col space-y-3 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-[#9F86D9] hover:text-white">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -180,27 +180,27 @@ const FeaturedProducts = () => {
               </div>
 
                 {/* Product Info */}
-                <div className="text-center space-y-2 w-full md:w-auto max-w-[336px] min-w-0">
-                  <h3 className="text-base md:text-lg font-bold text-gray-900 leading-[1.75] truncate" title={product.name} style={{ fontFamily: 'DM Sans' }}>
+                <div className="text-center space-y-1.5 sm:space-y-2 w-full px-2">
+                  <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 leading-tight line-clamp-2" title={product.name} style={{ fontFamily: 'DM Sans' }}>
                     {product.name}
                   </h3>
                   
-                  {/* Rating - Hidden on mobile */}
-                  <div className="hidden md:flex items-center justify-center space-x-1">
+                  {/* Rating - Show on all screens but smaller on mobile */}
+                  <div className="flex items-center justify-center space-x-0.5 sm:space-x-1">
                     {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <svg key={i} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400 fill-current" viewBox="0 0 20 20">
                         <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                       </svg>
                     ))}
                   </div>
 
                   {/* Price */}
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-[15px] md:gap-4">
-                    <span className="text-lg text-[#9F86D9] leading-[1.67]" style={{ fontFamily: 'DM Sans' }}>
+                  <div className="flex flex-col items-center justify-center gap-1 sm:gap-2">
+                    <span className="text-base sm:text-lg lg:text-xl text-[#9F86D9] font-semibold leading-tight" style={{ fontFamily: 'DM Sans' }}>
                       {formatCurrency(price)}
                     </span>
                     {price < originalPrice && (
-                      <span className="hidden md:inline text-lg text-gray-500 line-through" style={{ fontFamily: 'DM Sans' }}>
+                      <span className="text-sm sm:text-base text-gray-500 line-through" style={{ fontFamily: 'DM Sans' }}>
                         {formatCurrency(originalPrice)}
                       </span>
                     )}

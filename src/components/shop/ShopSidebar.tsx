@@ -5,7 +5,12 @@ import { formatCurrency } from '../../utils/currency';
 import { useShop } from '../../contexts/ShopContext';
 import type { RatingKey } from '../../services/productService';
 
-const ShopSidebar = () => {
+interface ShopSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const ShopSidebar = ({ isOpen = true, onClose }: ShopSidebarProps) => {
   const { t } = useTranslation();
   const loadErrorMessage = t('shop.categoriesLoadError');
   const noCategoriesMessage = t('shop.noCategories');
@@ -135,8 +140,9 @@ const ShopSidebar = () => {
                      filters.priceRange !== null || 
                      filters.minRating !== null;
 
-  return (
-    <aside className="w-[306px] flex-shrink-0 space-y-8">
+  // Mobile overlay and modal wrapper
+  const sidebarContent = (
+    <>
       {/* Clear Filters Button */}
       {hasFilters && (
         <button
@@ -149,13 +155,13 @@ const ShopSidebar = () => {
 
       {/* Categories */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900">{t('shop.categoriesTitle')}</h3>
-          <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900">{t('shop.categoriesTitle')}</h3>
+          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
           </svg>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {isLoadingCategories
             ? Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="h-6 bg-gray-100 rounded animate-pulse"></div>
@@ -196,7 +202,7 @@ const ShopSidebar = () => {
                             onClick={(event) => event.stopPropagation()}
                             className="w-4 h-4 text-[#9F86D9] border-gray-300 rounded focus:ring-[#9F86D9]"
                           />
-                          <span className="text-base">{category.name}</span>
+                          <span className="text-sm sm:text-base">{category.name}</span>
                         </div>
                         {typeof category.productCount === 'number' && (
                           <span className={`px-2 py-1 rounded text-sm ${
@@ -209,18 +215,18 @@ const ShopSidebar = () => {
                     );
                   })}
         </div>
-        <div className="w-full h-px bg-gray-200 mt-6"></div>
+        <div className="w-full h-px bg-gray-200 mt-4 sm:mt-6"></div>
       </div>
 
       {/* Price Range */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900">{t('shop.price')}</h3>
-          <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900">{t('shop.price')}</h3>
+          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
           </svg>
         </div>
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           <div className="relative w-full h-1 bg-gray-200 rounded">
             <div 
               className="absolute h-full bg-[#9F86D9] rounded" 
@@ -230,14 +236,14 @@ const ShopSidebar = () => {
               }}
             ></div>
           </div>
-          <div className="flex justify-between mt-2">
-            <span className="text-sm text-gray-500">{t('shop.priceRange')}</span>
-            <span className="text-sm text-gray-900">
+          <div className="flex justify-between mt-2 text-xs sm:text-sm">
+            <span className="text-gray-500">{t('shop.priceRange')}</span>
+            <span className="text-gray-900">
               {formatCurrency(priceSliderValues[0])} - {formatCurrency(priceSliderValues[1])}
             </span>
           </div>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {priceRanges.map((range, index) => {
             const isSelected = isPriceRangeSelected(range.from, range.to);
             return (
@@ -268,18 +274,18 @@ const ShopSidebar = () => {
             );
           })}
         </div>
-        <div className="w-full h-px bg-gray-200 mt-6"></div>
+        <div className="w-full h-px bg-gray-200 mt-4 sm:mt-6"></div>
       </div>
 
       {/* Rating */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900">{t('shop.ratingTitle')}</h3>
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900">{t('shop.ratingTitle')}</h3>
           <span className="text-xs text-gray-500">
             {totalRatings > 0 ? `${totalRatings} ${itemsLabel}` : t('shop.noRatings') || 'Chưa có dữ liệu'}
           </span>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {ratingOptions.map((star) => {
             const isSelected = isRatingSelected(star);
             const count = ratingCounts[star] ?? 0;
@@ -332,7 +338,67 @@ const ShopSidebar = () => {
         </div>
         <div className="w-full h-px bg-gray-200 mt-6"></div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile: Overlay */}
+      {isOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Mobile: Slide-up Drawer */}
+      <div 
+        className={`lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 transform transition-transform duration-300 max-h-[85vh] overflow-y-auto ${
+          isOpen ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        {/* Drawer Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-2xl">
+          <h2 className="text-lg font-bold text-gray-900">
+            {t('shop.filters') || 'Bộ lọc'}
+          </h2>
+          <button 
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Drawer Content */}
+        <div className="p-4 space-y-6">
+          {sidebarContent}
+        </div>
+
+        {/* Drawer Footer */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3">
+          <button
+            onClick={clearFilters}
+            className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-900 transition-colors"
+          >
+            {t('shop.reset') || 'Đặt lại'}
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 bg-[#9F86D9] hover:bg-[#8a6fc9] text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            {t('shop.applyFilters') || 'Áp dụng'}
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop: Regular Sidebar */}
+      <aside className="hidden lg:block w-[306px] flex-shrink-0 space-y-8">
+        {sidebarContent}
+      </aside>
+    </>
   );
 };
 

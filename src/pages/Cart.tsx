@@ -178,21 +178,21 @@ const Cart = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Title & Breadcrumb */}
-      <div className="max-w-[1434px] mx-auto px-4 py-16 text-center">
-        <h1 className="text-[64px] font-bold text-[#1C1D1D] mb-6" style={{ fontFamily: 'Lobster Two' }}>{t('cart.title')}</h1>
-        <div className="flex items-center justify-center gap-3 text-base">
+      <div className="max-w-[1434px] mx-auto px-4 py-8 sm:py-12 lg:py-16 text-center">
+        <h1 className="text-3xl sm:text-4xl lg:text-[64px] font-bold text-[#1C1D1D] mb-4 sm:mb-6" style={{ fontFamily: 'Lobster Two' }}>{t('cart.title')}</h1>
+        <div className="flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base flex-wrap">
           <a href="/" className="text-[#9F86D9] hover:underline">{t('cart.home')}</a>
-          <span className="text-[#646667]"></span>
+          <span className="text-[#646667]">›</span>
           <a href="/shop" className="text-[#9F86D9] hover:underline">{t('cart.shop')}</a>
-          <span className="text-[#646667]"></span>
+          <span className="text-[#646667]">›</span>
           <span className="text-[#646667]">{t('cart.cart')}</span>
         </div>
       </div>
 
       {/* Cart Table */}
       <div className="max-w-[1434px] mx-auto px-4 mb-8">
-        {/* Table Header */}
-        <div className="bg-[#9F86D9] rounded h-[67px] flex items-center px-5 mb-4">
+        {/* Table Header - Desktop Only */}
+        <div className="hidden lg:flex bg-[#9F86D9] rounded h-[67px] items-center px-5 mb-4">
           <div className="flex items-center w-full">
             <div className="flex items-center gap-5 flex-[2]">
               <input
@@ -236,11 +236,112 @@ const Cart = () => {
               return (
                 <div
                   key={item.id}
-                  className={`h-[158px] rounded flex items-center px-5 ${
+                  className={`rounded p-4 sm:p-5 ${
                     index % 2 === 0 ? 'bg-white' : 'bg-[#FFF5F2]'
                   }`}
                 >
-                  <div className="flex items-center w-full">
+                  {/* Mobile Card Layout */}
+                  <div className="lg:hidden space-y-4">
+                    <div className="flex gap-4">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 border border-[#DBE2E5] rounded flex-shrink-0">
+                        <img
+                          src={item.variantImage || item.productImage || '/images/placeholder.webp'}
+                          alt={item.productName}
+                          className="w-full h-full object-cover rounded"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[#1C1D1D] font-bold text-sm sm:text-base line-clamp-2 mb-1">
+                          {item.productName}
+                        </h3>
+                        {item.variantName && (
+                          <p className="text-[#646667] text-xs mb-1">{item.variantName}</p>
+                        )}
+                        {item.activeDiscount?.campaignName && (
+                          <p className="text-xs text-[#E35946]">{item.activeDiscount.campaignName}</p>
+                        )}
+                        <p className="text-xs text-[#646667] mt-2">
+                          {item.stockQuantity > 0 ? `Còn ${item.stockQuantity}` : 'Hết hàng'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => removeItem(item.id, item.productName)}
+                        disabled={updatingItemId === item.id || removingItemId === item.id}
+                        className="w-8 h-8 flex items-center justify-center text-[#646667] hover:text-[#E35946] disabled:opacity-50 transition-colors flex-shrink-0"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-gray-200 pt-3">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-[#646667] mb-1">Đơn giá</span>
+                        <div className="flex flex-col">
+                          <span className="text-[#9F86D9] text-base font-semibold">
+                            {formatCurrency(unitPrice)}
+                          </span>
+                          {hasItemDiscount && (
+                            <span className="text-xs text-gray-400 line-through">
+                              {formatCurrency(basePrice)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs text-[#646667] mb-1">Số lượng</span>
+                        <div className="flex items-center border border-[#DBE2E5] rounded">
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.productName, item.stockQuantity)}
+                            disabled={updatingItemId === item.id || removingItemId === item.id}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                            </svg>
+                          </button>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={quantityInputs[item.id] ?? item.quantity}
+                            onChange={(e) => handleQuantityInputChange(item.id, e.target.value)}
+                            onBlur={() => handleQuantityInputBlur(item)}
+                            onKeyDown={handleQuantityInputKeyDown}
+                            disabled={updatingItemId === item.id || removingItemId === item.id}
+                            className="w-12 text-center font-bold text-sm text-[#1C1D1D] bg-transparent border-0 focus:outline-none disabled:opacity-50"
+                          />
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.productName, item.stockQuantity)}
+                            disabled={updatingItemId === item.id || removingItemId === item.id || item.quantity >= item.stockQuantity}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs text-[#646667] mb-1">Tổng</span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-[#9F86D9] text-base font-bold">
+                            {formatCurrency(unitPrice * item.quantity)}
+                          </span>
+                          {hasItemDiscount && lineDiscount > 0.005 && (
+                            <span className="text-xs text-[#E35946]">
+                              -{formatCurrency(lineDiscount)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop Table Layout */}
+                  <div className="hidden lg:flex items-center w-full">
                     {/* Checkbox & Product Info */}
                     <div className="flex items-center gap-5 flex-[2]">
                     <input
@@ -372,8 +473,8 @@ const Cart = () => {
                       )}
                     </button>
                   </div>
+                  </div>
                 </div>
-              </div>
               );
             })}
           </div>
@@ -381,17 +482,17 @@ const Cart = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="max-w-[1434px] mx-auto px-4 mb-16 flex justify-end gap-4">
+      <div className="max-w-[1434px] mx-auto px-4 mb-8 sm:mb-12 lg:mb-16 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
         <a
           href="/shop"
-          className="flex items-center justify-center gap-2 px-7 py-4 border border-[#9F86D9] text-[#9F86D9] rounded font-bold text-xs hover:bg-[#9F86D9] hover:text-white transition-colors"
+          className="flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-4 border border-[#9F86D9] text-[#9F86D9] rounded font-bold text-xs hover:bg-[#9F86D9] hover:text-white transition-colors"
         >
           <span>{t('cart.continueShopping')}</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.33 8h9.34M8 3.33l4.67 4.67L8 12.67" />
           </svg>
         </a>
-        <button className="flex items-center justify-center gap-2 px-7 py-4 bg-[#9F86D9] text-white rounded font-bold text-xs hover:bg-[#8a75c4] transition-colors">
+        <button className="flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-4 bg-[#9F86D9] text-white rounded font-bold text-xs hover:bg-[#8a75c4] transition-colors">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 2l2.67 6m0 0L8 14l3.33-6M4.67 8h10.66M10.33 2l2.67 2.67-2.67 2.66M3 11.33l2.67 2.67L3 16.67" />
           </svg>
@@ -400,34 +501,34 @@ const Cart = () => {
       </div>
 
       {/* Discount & Checkout Section */}
-      <div className="max-w-[1434px] mx-auto px-4 mb-16">
-        <div className="flex gap-8">
+      <div className="max-w-[1434px] mx-auto px-4 mb-8 sm:mb-12 lg:mb-16">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Left Side - Discount & Shipping */}
           <div className="flex-1 space-y-8">
             {/* Discount Code */}
-            <div className="h-12 flex">
+            <div className="flex h-12">
               <input
                 type="text"
                 placeholder={t('cart.discountCode')}
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value)}
-                className="flex-1 px-5 border border-[#DBE2E5] rounded-l text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
+                className="flex-1 px-4 sm:px-5 border border-[#DBE2E5] rounded-l text-sm sm:text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
               />
-              <button className="w-[115px] bg-[#DBE2E5] text-[#1C1D1D] font-bold text-sm rounded-r hover:bg-[#9F86D9] hover:text-white transition-colors">
+              <button className="w-20 sm:w-[115px] bg-[#DBE2E5] text-[#1C1D1D] font-bold text-xs sm:text-sm rounded-r hover:bg-[#9F86D9] hover:text-white transition-colors">
                 {t('cart.apply')}
               </button>
             </div>
 
             {/* Shipping Calculation */}
-            <div className="border border-[#DBE2E5] rounded p-7 space-y-6">
-              <h3 className="text-base font-bold text-[#1C1D1D]">{t('cart.calculateShipping')}</h3>
+            <div className="border border-[#DBE2E5] rounded p-4 sm:p-6 lg:p-7 space-y-4 sm:space-y-6">
+              <h3 className="text-sm sm:text-base font-bold text-[#1C1D1D]">{t('cart.calculateShipping')}</h3>
               
               {/* Country Select */}
               <div className="relative">
                 <select
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value)}
-                  className="w-full h-11 px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] appearance-none focus:outline-none focus:border-[#9F86D9] bg-white"
+                  className="w-full h-11 px-4 sm:px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] appearance-none focus:outline-none focus:border-[#9F86D9] bg-white"
                 >
                   <option value="USA">USA</option>
                   <option value="UK">United Kingdom</option>
@@ -435,7 +536,7 @@ const Cart = () => {
                   <option value="DE">Germany</option>
                 </select>
                 <svg
-                  className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#1C1D1D] pointer-events-none"
+                  className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#1C1D1D] pointer-events-none"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -448,14 +549,14 @@ const Cart = () => {
               <input
                 type="text"
                 placeholder={t('cart.stateCountry')}
-                className="w-[248px] h-11 px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] focus:outline-none focus:border-[#9F86D9]"
+                className="w-full sm:w-[248px] h-11 px-4 sm:px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] focus:outline-none focus:border-[#9F86D9]"
               />
 
               {/* PostCode */}
               <input
                 type="text"
                 placeholder={t('cart.postCode')}
-                className="w-[248px] h-11 px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] focus:outline-none focus:border-[#9F86D9]"
+                className="w-full sm:w-[248px] h-11 px-4 sm:px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] focus:outline-none focus:border-[#9F86D9]"
               />
 
               {shippingCalculated && (
@@ -472,8 +573,8 @@ const Cart = () => {
           </div>
 
           {/* Right Side - Checkout Summary */}
-          <div className="w-[430px]">
-            <div className="border border-[#DBE2E5] rounded p-5 space-y-2">
+          <div className="w-full lg:w-[430px]">
+            <div className="border border-[#DBE2E5] rounded p-4 sm:p-5 space-y-2">
               {/* Subtotal */}
               {hasCartDiscount && (
                 <div className="flex items-center justify-between py-2 text-sm text-[#646667]">

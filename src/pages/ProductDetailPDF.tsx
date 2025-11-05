@@ -187,27 +187,27 @@ const ProductDetailPDF = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
-      <div className="bg-[#EFF2F3] py-4">
+      <div className="bg-[#EFF2F3] py-3 sm:py-4">
         <div className="max-w-[1434px] mx-auto px-4">
-          <div className="flex items-center gap-3 text-base">
-            <a href="/" className="text-[#9F86D9] hover:underline">Home</a>
+          <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base overflow-x-auto">
+            <a href="/" className="text-[#9F86D9] hover:underline whitespace-nowrap">Home</a>
             <span className="text-[#646667]">›</span>
-            <a href="/shop" className="text-[#9F86D9] hover:underline">Shop</a>
+            <a href="/shop" className="text-[#9F86D9] hover:underline whitespace-nowrap">Shop</a>
             <span className="text-[#646667]">›</span>
-            <span className="text-[#646667]">Tài liệu miễn phí</span>
+            <span className="text-[#646667] whitespace-nowrap">Tài liệu miễn phí</span>
           </div>
         </div>
       </div>
 
       {/* Product Detail Section */}
-      <div className="max-w-[1434px] mx-auto px-4 py-16">
-        <div className="flex gap-10">
+      <div className="max-w-[1434px] mx-auto px-4 py-6 sm:py-10 lg:py-16">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
           {/* Left Side - PDF Preview */}
-          <div className="w-[564px]">
-            <div className="bg-[#EFF2F3] rounded-lg p-8 flex flex-col items-center justify-center" style={{ minHeight: '645px' }}>
+          <div className="w-full lg:w-[564px]">
+            <div className="bg-[#EFF2F3] rounded-lg p-6 sm:p-8 flex flex-col items-center justify-center min-h-[400px] sm:min-h-[500px] lg:min-h-[645px]">
               {/* PDF Icon */}
-              <div className="mb-6">
-                <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+              <div className="mb-4 sm:mb-6">
+                <svg width="100" height="100" className="sm:w-[120px] sm:h-[120px]" viewBox="0 0 120 120" fill="none">
                   <rect width="120" height="120" rx="8" fill="#E35946"/>
                   <path d="M40 30h40v60H40z" fill="white" opacity="0.2"/>
                   <text x="60" y="70" textAnchor="middle" fill="white" fontSize="24" fontWeight="bold">PDF</text>
@@ -215,10 +215,10 @@ const ProductDetailPDF = () => {
               </div>
               
               {/* File Info */}
-              <h3 className="text-xl font-bold text-[#1C1D1D] mb-2 text-center">
+              <h3 className="text-lg sm:text-xl font-bold text-[#1C1D1D] mb-2 text-center">
                 Xem trước tài liệu
               </h3>
-              <div className="flex items-center gap-4 text-sm text-[#646667] mb-6">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-[#646667] mb-4 sm:mb-6">
                 <span className="flex items-center gap-1">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M5 4v8l7-4-7-4z"/>
@@ -232,34 +232,34 @@ const ProductDetailPDF = () => {
               </div>
 
               {/* Preview Button */}
-              <button className="px-6 py-3 bg-white text-[#9F86D9] border-2 border-[#9F86D9] rounded-lg font-medium hover:bg-[#9F86D9] hover:text-white transition-colors mb-4">
+              <button className="px-4 sm:px-6 py-2 sm:py-3 bg-white text-[#9F86D9] border-2 border-[#9F86D9] rounded-lg font-medium text-sm sm:text-base hover:bg-[#9F86D9] hover:text-white transition-colors mb-3 sm:mb-4">
                 Xem trước toàn bộ
               </button>
               
-              <p className="text-sm text-[#646667] text-center">
+              <p className="text-xs sm:text-sm text-[#646667] text-center px-4">
                 Nhấn để xem trước nội dung file PDF
               </p>
             </div>
           </div>
 
           {/* Right Side - Product Info */}
-          <div className="flex-1 max-w-[610px]">
+          <div className="flex-1 lg:max-w-[610px]">
             {/* Free Badge */}
             {isFree && (
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-[#39F5C4] text-white text-base font-bold px-4 py-1.5 rounded">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <div className="bg-[#39F5C4] text-white text-sm sm:text-base font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded">
                   MIỄN PHÍ
                 </div>
               </div>
             )}
 
             {/* Product Title */}
-            <h1 className="text-2xl font-bold text-[#1C1D1D] mb-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#1C1D1D] mb-3 sm:mb-4">
               {product.name}
             </h1>
 
             {/* Rating & Downloads */}
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
               <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} width="20" height="20" viewBox="0 0 20 20" fill="#FCC605">
@@ -288,24 +288,24 @@ const ProductDetailPDF = () => {
             </div>
 
             {/* File Information */}
-            <div className="bg-[#EFF2F3] rounded-lg p-6 mb-6">
-              <h3 className="text-base font-bold text-[#1C1D1D] mb-4">Thông tin file</h3>
-              <div className="space-y-3">
+            <div className="bg-[#EFF2F3] rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+              <h3 className="text-sm sm:text-base font-bold text-[#1C1D1D] mb-3 sm:mb-4">Thông tin file</h3>
+              <div className="space-y-2 sm:space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-[#646667]">Định dạng:</span>
-                  <span className="text-sm font-medium text-[#1C1D1D]">{product.fileFormat || 'PDF'}</span>
+                  <span className="text-xs sm:text-sm text-[#646667]">Định dạng:</span>
+                  <span className="text-xs sm:text-sm font-medium text-[#1C1D1D]">{product.fileFormat || 'PDF'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-[#646667]">Kích thước:</span>
-                  <span className="text-sm font-medium text-[#1C1D1D]">{product.fileSize || 'N/A'}</span>
+                  <span className="text-xs sm:text-sm text-[#646667]">Kích thước:</span>
+                  <span className="text-xs sm:text-sm font-medium text-[#1C1D1D]">{product.fileSize || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-[#646667]">Số trang:</span>
-                  <span className="text-sm font-medium text-[#1C1D1D]">{product.pageCount || 0} trang</span>
+                  <span className="text-xs sm:text-sm text-[#646667]">Số trang:</span>
+                  <span className="text-xs sm:text-sm font-medium text-[#1C1D1D]">{product.pageCount || 0} trang</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-[#646667]">Ngôn ngữ:</span>
-                  <span className="text-sm font-medium text-[#1C1D1D]">Tiếng Việt</span>
+                  <span className="text-xs sm:text-sm text-[#646667]">Ngôn ngữ:</span>
+                  <span className="text-xs sm:text-sm font-medium text-[#1C1D1D]">Tiếng Việt</span>
                 </div>
               </div>
             </div>
@@ -314,7 +314,7 @@ const ProductDetailPDF = () => {
             <button 
               onClick={handleDownload}
               disabled={downloading}
-              className={`w-full h-14 bg-[#9F86D9] text-white rounded-lg font-bold text-base hover:bg-[#8a75c4] transition-colors flex items-center justify-center gap-3 mb-4 ${
+              className={`w-full h-12 sm:h-14 bg-[#9F86D9] text-white rounded-lg font-bold text-sm sm:text-base hover:bg-[#8a75c4] transition-colors flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4 ${
                 downloading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
@@ -356,8 +356,8 @@ const ProductDetailPDF = () => {
             )}
           </div>
 
-          {/* Recommended Products Sidebar */}
-          <div className="w-[171px]">
+          {/* Recommended Products Sidebar - Hidden on mobile */}
+          <div className="hidden lg:block w-[171px]">
             <h3 className="text-base text-center text-[#646667] mb-6 leading-tight">
               Gợi ý<br />cho bạn
             </h3>
@@ -390,12 +390,12 @@ const ProductDetailPDF = () => {
       </div>
 
       {/* Tabs Section */}
-      <div className="max-w-[1434px] mx-auto px-4 mb-16">
-        <div className="border-b-2 border-[#DBE2E5] mb-8">
-          <div className="flex gap-12">
+      <div className="max-w-[1434px] mx-auto px-4 mb-10 sm:mb-16">
+        <div className="border-b-2 border-[#DBE2E5] mb-6 sm:mb-8">
+          <div className="flex gap-6 sm:gap-8 lg:gap-12 overflow-x-auto">
             <button
               onClick={() => setActiveTab('description')}
-              className={`text-xl pb-4 ${
+              className={`text-base sm:text-lg lg:text-xl pb-3 sm:pb-4 whitespace-nowrap ${
                 activeTab === 'description'
                   ? 'text-[#9F86D9] border-b-2 border-[#9F86D9]'
                   : 'text-[#1C1D1D]'
@@ -405,7 +405,7 @@ const ProductDetailPDF = () => {
             </button>
             <button
               onClick={() => setActiveTab('content')}
-              className={`text-xl pb-4 ${
+              className={`text-base sm:text-lg lg:text-xl pb-3 sm:pb-4 whitespace-nowrap ${
                 activeTab === 'content'
                   ? 'text-[#9F86D9] border-b-2 border-[#9F86D9]'
                   : 'text-[#1C1D1D]'
@@ -415,7 +415,7 @@ const ProductDetailPDF = () => {
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
-              className={`text-xl pb-4 ${
+              className={`text-base sm:text-lg lg:text-xl pb-3 sm:pb-4 whitespace-nowrap ${
                 activeTab === 'reviews'
                   ? 'text-[#9F86D9] border-b-2 border-[#9F86D9]'
                   : 'text-[#1C1D1D]'
@@ -427,9 +427,9 @@ const ProductDetailPDF = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="flex gap-16">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
           {/* Left Content */}
-          <div className="flex-1 max-w-[1004px]">
+          <div className="flex-1 lg:max-w-[1004px]">
             {activeTab === 'description' && (
               <div className="space-y-6 text-base text-[#1C1D1D]">
                 <h3 className="text-xl font-bold text-[#1C1D1D]">MÔ TẢ TÀI LIỆU</h3>
@@ -533,9 +533,9 @@ const ProductDetailPDF = () => {
           </div>
 
           {/* Right Sidebar - Download Stats */}
-          <div className="w-[336px]">
-            <h3 className="text-base font-bold text-[#9F86D9] mb-4">Thống kê</h3>
-            <div className="bg-[#EFF2F3] rounded-lg p-6 space-y-4">
+          <div className="w-full lg:w-[336px]">
+            <h3 className="text-base font-bold text-[#9F86D9] mb-3 sm:mb-4">Thống kê</h3>
+            <div className="bg-[#EFF2F3] rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-[#646667]">Lượt tải:</span>
                 <span className="text-lg font-bold text-[#1C1D1D]">247</span>

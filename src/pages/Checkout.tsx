@@ -550,9 +550,8 @@ const Checkout = () => {
 
       toast.success(t('checkout.success'));
       await clearCart();
-      navigate(`/order-success?orderNumber=${response.orderNumber}`, {
-        state: { order: response },
-      });
+      // Redirect customer to product listing (shop) after successful order
+      navigate('/shop');
     } catch (error) {
       let message = t('checkout.errors.unknown');
       if (isAxiosError(error)) {
@@ -577,35 +576,35 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-[1434px] mx-auto px-4 py-16 text-center">
-        <h1 className="text-[64px] font-bold text-[#1C1D1D] mb-6" style={{ fontFamily: 'Lobster Two' }}>
+      <div className="max-w-[1434px] mx-auto px-4 py-8 sm:py-12 lg:py-16 text-center">
+        <h1 className="text-3xl sm:text-4xl lg:text-[64px] font-bold text-[#1C1D1D] mb-4 sm:mb-6" style={{ fontFamily: 'Lobster Two' }}>
           {t('checkout.title')}
         </h1>
-        <div className="flex items-center justify-center gap-3 text-base">
+        <div className="flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base flex-wrap">
           <a href="/" className="text-[#9F86D9] hover:underline">{t('header.home')}</a>
-          <span className="text-[#646667]" />
+          <span className="text-[#646667]">›</span>
           <a href="/shop" className="text-[#9F86D9] hover:underline">{t('header.shop')}</a>
-          <span className="text-[#646667]" />
+          <span className="text-[#646667]">›</span>
           <span className="text-[#646667]">{t('checkout.title')}</span>
         </div>
       </div>
 
-      <div className="max-w-[1434px] mx-auto px-4 mb-8">
-        <div className="flex items-center gap-3 bg-[#FFF5F2] border border-[#E35946] rounded px-7 py-4">
-          <svg width="24" height="21" viewBox="0 0 24 21" fill="none">
+      <div className="max-w-[1434px] mx-auto px-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3 bg-[#FFF5F2] border border-[#E35946] rounded px-4 sm:px-6 lg:px-7 py-3 sm:py-4">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" width="24" height="21" viewBox="0 0 24 21" fill="none">
             <path d="M4.9 6.25h1.09v2.27H4.9V6.25zm0 2.96h1.09v2.27H4.9V9.21zm0 2.96h1.09v2.27H4.9v-2.27z" fill="#E35946" />
             <path d="M23.97 5.51l-3.98-5.49-6.28 6.27-2.74-2.73L0 14.53l9.8-5.19 3.54 3.54 6.28-6.27 4.35 5.98V5.51z" fill="#E35946" />
           </svg>
-          <span className="font-bold text-base text-[#1C1D1D]">{t('checkout.couponNotice')}</span>
+          <span className="font-bold text-sm sm:text-base text-[#1C1D1D]">{t('checkout.couponNotice')}</span>
         </div>
       </div>
 
-      <div className="max-w-[1434px] mx-auto px-4 mb-16">
-        <div className="flex flex-col lg:flex-row gap-12">
+      <div className="max-w-[1434px] mx-auto px-4 mb-8 sm:mb-12 lg:mb-16">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           <div className="flex-1">
             <a
               href="/cart"
-              className="inline-flex items-center gap-2 px-6 py-4 border border-[#9F86D9] text-[#9F86D9] rounded font-bold text-xs mb-8 hover:bg-[#9F86D9] hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 border border-[#9F86D9] text-[#9F86D9] rounded font-bold text-xs mb-6 sm:mb-8 hover:bg-[#9F86D9] hover:text-white transition-colors"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12.67 8H3.33M8 3.33 3.33 8 8 12.67" />
@@ -613,17 +612,17 @@ const Checkout = () => {
               <span>{t('checkout.returnToCart')}</span>
             </a>
 
-            <h2 className="text-2xl font-bold text-[#1C1D1D] mb-6">{t('checkout.billingDetails')}</h2>
-            <form className="space-y-6" onSubmit={handlePlaceOrder}>
-              <div className="space-y-4">
-                <div className="flex flex-col md:flex-row gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1D1D] mb-4 sm:mb-6">{t('checkout.billingDetails')}</h2>
+            <form className="space-y-4 sm:space-y-6" onSubmit={handlePlaceOrder}>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <input
                     type="text"
                     name="firstName"
                     placeholder={t('checkout.form.firstName')}
                     value={billing.firstName}
                     onChange={handleBillingChange}
-                    className="flex-1 px-6 py-4 border border-[#DBE2E5] rounded text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
+                    className="flex-1 px-4 sm:px-6 py-3 sm:py-4 border border-[#DBE2E5] rounded text-sm sm:text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
                   />
                   <input
                     type="text"
@@ -631,18 +630,18 @@ const Checkout = () => {
                     placeholder={t('checkout.form.lastName')}
                     value={billing.lastName}
                     onChange={handleBillingChange}
-                    className="flex-1 px-6 py-4 border border-[#DBE2E5] rounded text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
+                    className="flex-1 px-4 sm:px-6 py-3 sm:py-4 border border-[#DBE2E5] rounded text-sm sm:text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
                   />
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <input
                     type="email"
                     name="email"
                     placeholder={t('checkout.form.email')}
                     value={billing.email}
                     onChange={handleBillingChange}
-                    className="flex-1 px-6 py-4 border border-[#DBE2E5] rounded text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
+                    className="flex-1 px-4 sm:px-6 py-3 sm:py-4 border border-[#DBE2E5] rounded text-sm sm:text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
                   />
                   <input
                     type="tel"
@@ -650,7 +649,7 @@ const Checkout = () => {
                     placeholder={t('checkout.form.phone')}
                     value={billing.phone}
                     onChange={handleBillingChange}
-                    className="flex-1 px-6 py-4 border border-[#DBE2E5] rounded text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
+                    className="flex-1 px-4 sm:px-6 py-3 sm:py-4 border border-[#DBE2E5] rounded text-sm sm:text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
                   />
                 </div>
 
@@ -660,7 +659,7 @@ const Checkout = () => {
                   placeholder={t('checkout.form.address1')}
                   value={billing.address1}
                   onChange={handleBillingChange}
-                  className="w-full px-6 py-4 border border-[#DBE2E5] rounded text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
+                  className="w-full px-4 sm:px-6 py-3 sm:py-4 border border-[#DBE2E5] rounded text-sm sm:text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
                 />
 
                 <input
@@ -669,7 +668,7 @@ const Checkout = () => {
                   placeholder={t('checkout.form.address2')}
                   value={billing.address2}
                   onChange={handleBillingChange}
-                  className="w-full px-6 py-4 border border-[#DBE2E5] rounded text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
+                  className="w-full px-4 sm:px-6 py-3 sm:py-4 border border-[#DBE2E5] rounded text-sm sm:text-base text-[#646667] focus:outline-none focus:border-[#9F86D9]"
                 />
 
                 <div className="flex flex-col md:flex-row gap-4">
@@ -930,11 +929,11 @@ const Checkout = () => {
           </div>
 
           <div className="w-full lg:w-[533px]">
-            <div className="border border-[#DBE2E5] rounded p-10">
-              <div className="mb-6">
+            <div className="border border-[#DBE2E5] rounded p-5 sm:p-8 lg:p-10">
+              <div className="mb-4 sm:mb-6">
                 <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#DBE2E5]">
-                  <span className="text-xl font-bold text-[#1C1D1D]">{t('cart.product')}</span>
-                  <span className="text-xl font-bold text-[#1C1D1D]">{t('cart.total')}</span>
+                  <span className="text-lg sm:text-xl font-bold text-[#1C1D1D]">{t('cart.product')}</span>
+                  <span className="text-lg sm:text-xl font-bold text-[#1C1D1D]">{t('cart.total')}</span>
                 </div>
 
                 <div className="space-y-2">
@@ -950,29 +949,40 @@ const Checkout = () => {
                       : Math.max(computedPerUnitDiscount, 0);
                     const hasItemDiscount = discountPerUnit > 0.005 || computedPerUnitDiscount > 0.005;
                     const lineDiscount = hasItemDiscount ? discountPerUnit * item.quantity : 0;
+                    const imageSrc = item.variantImage || item.productImage || '/images/placeholder.webp';
 
                     return (
-                      <div key={item.id} className="flex justify-between items-start py-2">
-                        <div className="flex flex-col flex-1 text-sm text-[#1C1D1D]">
-                          <span className="font-medium">{item.productName}</span>
-                          {item.variantName && (
-                            <span className="text-xs text-[#646667]">{item.variantName}</span>
-                          )}
-                          <span className="text-xs text-[#646667] mt-1">
-                            {t('cart.quantity')}: {item.quantity}
-                          </span>
-                          {item.activeDiscount?.campaignName && (
-                            <span className="text-xs text-[#E35946] mt-1">
-                              {item.activeDiscount.campaignName}
+                      <div key={item.id} className="flex items-start justify-between gap-4 py-2">
+                        <div className="flex flex-1 items-start gap-3">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 overflow-hidden rounded border border-[#DBE2E5] bg-white">
+                            <img
+                              src={imageSrc}
+                              alt={item.productName}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="flex flex-col flex-1 text-sm text-[#1C1D1D]">
+                            <span className="font-medium">{item.productName}</span>
+                            {item.variantName && (
+                              <span className="text-xs text-[#646667]">{item.variantName}</span>
+                            )}
+                            <span className="text-xs text-[#646667] mt-1">
+                              {t('cart.quantity')}: {item.quantity}
                             </span>
-                          )}
-                          {hasItemDiscount && (
-                            <span className="text-xs text-[#E35946] mt-1">
-                              {t('checkout.summary.savedPerItem', {
-                                amount: formatCurrency(discountPerUnit),
-                              })}
-                            </span>
-                          )}
+                            {item.activeDiscount?.campaignName && (
+                              <span className="text-xs text-[#E35946] mt-1">
+                                {item.activeDiscount.campaignName}
+                              </span>
+                            )}
+                            {hasItemDiscount && (
+                              <span className="text-xs text-[#E35946] mt-1">
+                                {t('checkout.summary.savedPerItem', {
+                                  amount: formatCurrency(discountPerUnit),
+                                })}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex flex-col items-end text-right text-sm text-[#1C1D1D]">
                           <span className="font-bold text-base">

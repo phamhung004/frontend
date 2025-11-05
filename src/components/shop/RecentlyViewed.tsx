@@ -51,41 +51,41 @@ const RecentlyViewed = () => {
   };
 
   return (
-    <section className="py-16 border-t border-gray-200">
+    <section className="py-8 sm:py-12 lg:py-16 border-t border-gray-200">
       <div className="max-w-[1434px] mx-auto px-4">
-        <h2 className="text-[32px] font-bold uppercase text-[#9F86D9] tracking-tight mb-8">
+        <h2 className="text-xl sm:text-2xl lg:text-[32px] font-bold uppercase text-[#9F86D9] tracking-tight mb-6 sm:mb-8">
           Sản phẩm nổi bật
         </h2>
 
         {featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {featuredProducts.map((product) => (
               <div 
                 key={product.id}
                 className="group cursor-pointer"
                 onClick={() => handleNavigate(product)}
               >
-                <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-6">
+                <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 sm:mb-6">
                   <img
                     src={product.thumbnailUrl || '/images/placeholder.webp'}
                     alt={product.name}
-                    className="w-full h-[397px] object-cover"
+                    className="w-full h-48 sm:h-64 lg:h-80 xl:h-[397px] object-cover"
                   />
                   {product.badgeLabel && (
-                    <div className="absolute top-5 left-5 bg-[#EDA62A] text-white text-xs font-bold px-4 py-1.5 rounded">
+                    <div className="absolute top-3 left-3 sm:top-5 sm:left-5 bg-[#EDA62A] text-white text-xs font-bold px-3 py-1 sm:px-4 sm:py-1.5 rounded">
                       {product.badgeLabel}
                     </div>
                   )}
                 </div>
-                <div className="text-center">
-                  <h3 className="font-bold text-lg mb-2" title={product.name}>
+                <div className="text-center px-2">
+                  <h3 className="font-bold text-sm sm:text-base lg:text-lg mb-2 line-clamp-2" title={product.name}>
                     {product.name}
                   </h3>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[#9F86D9] text-lg">{resolveDisplayPrice(product)}</p>
-                    <div className="flex items-center gap-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2">
+                    <p className="text-[#9F86D9] text-base sm:text-lg font-semibold">{resolveDisplayPrice(product)}</p>
+                    <div className="flex items-center gap-0.5">
                       {[...Array(5)].map((_, index) => (
-                        <span key={index} className="text-yellow-400 text-xs">★</span>
+                        <span key={index} className="text-yellow-400 text-xs sm:text-sm">★</span>
                       ))}
                     </div>
                   </div>

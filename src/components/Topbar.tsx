@@ -14,7 +14,7 @@ const Topbar = () => {
   const currentLanguage = i18n.language === 'vi' ? 'VIE' : 'EN';
 
   return (
-    <div className="bg-[#EAE1D1]">
+    <div className="bg-[#EAE1D1] hidden lg:block">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-12 text-sm">
           {/* Left side */}

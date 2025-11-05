@@ -423,30 +423,30 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
-      <div className="bg-[#EFF2F3] py-4">
+      <div className="bg-[#EFF2F3] py-3 sm:py-4">
         <div className="max-w-[1434px] mx-auto px-4">
-          <div className="flex items-center gap-3 text-base">
-            <a href="/" className="text-[#9F86D9] hover:underline">Home</a>
+          <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base overflow-x-auto">
+            <a href="/" className="text-[#9F86D9] hover:underline whitespace-nowrap">Home</a>
             <span className="text-[#646667]">›</span>
-            <a href="/shop" className="text-[#9F86D9] hover:underline">Shop</a>
+            <a href="/shop" className="text-[#9F86D9] hover:underline whitespace-nowrap">Shop</a>
             <span className="text-[#646667]">›</span>
-            <span className="text-[#646667]">{product.categoryName || 'Sản phẩm'}</span>
+            <span className="text-[#646667] truncate">{product.categoryName || 'Sản phẩm'}</span>
           </div>
         </div>
       </div>
 
       {/* Product Detail Section */}
-      <div className="max-w-[1434px] mx-auto px-4 py-16">
-        <div className="flex gap-10">
+      <div className="max-w-[1434px] mx-auto px-4 py-6 sm:py-10 lg:py-16">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
           {/* Left Side - Images */}
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:flex-shrink-0">
             {/* Thumbnail Column */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-row sm:flex-col gap-2 sm:gap-4 overflow-x-auto sm:overflow-x-visible">
               {galleryImages.map((img) => (
                 <div
                   key={img.src}
                   onClick={() => setMainImage(img.src)}
-                  className={`w-[100px] h-[120px] bg-[#EFF2F3] cursor-pointer border-2 ${
+                  className={`w-16 h-20 sm:w-20 md:w-[100px] sm:h-24 md:h-[120px] bg-[#EFF2F3] cursor-pointer border-2 flex-shrink-0 ${
                     mainImage === img.src ? 'border-[#9F86D9]' : 'border-transparent'
                   }`}
                 >
@@ -456,7 +456,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Main Image */}
-            <div className="w-[460px] h-[645px] bg-[#EFF2F3]">
+            <div className="w-full sm:w-[400px] md:w-[460px] h-64 sm:h-96 md:h-[500px] lg:h-[645px] bg-[#EFF2F3]">
               <img 
                 src={mainImage || product.thumbnailUrl || placeholderImage} 
                 alt={product.name} 
@@ -466,16 +466,16 @@ const ProductDetail = () => {
           </div>
 
           {/* Right Side - Product Info */}
-          <div className="flex-1 max-w-[610px]">
+          <div className="flex-1 lg:max-w-[610px]">
             {/* Extra Discount Badge */}
             {hasDiscount && pricing && (
-              <div className="flex flex-col gap-1 mb-4">
+              <div className="flex flex-col gap-1 mb-3 sm:mb-4">
                 <div className="flex items-center gap-2">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" className="sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="12" fill="#E35946"/>
                     <path d="M6 12h12M12 8l4 4-4 4" stroke="white" strokeWidth="2"/>
                   </svg>
-                  <span className="text-[#E35946] text-base">
+                  <span className="text-[#E35946] text-sm sm:text-base">
                     {discountLabel}
                   </span>
                 </div>
@@ -489,20 +489,20 @@ const ProductDetail = () => {
 
             {/* Badge Label */}
             {product.badgeLabel && (
-              <div className="inline-block px-3 py-1 bg-[#E35946] text-white text-xs font-bold rounded mb-4">
+              <div className="inline-block px-2 sm:px-3 py-1 bg-[#E35946] text-white text-xs font-bold rounded mb-3 sm:mb-4">
                 {product.badgeLabel}
               </div>
             )}
 
             {/* Product Title */}
-            <h1 className="text-2xl font-bold text-[#1C1D1D] mb-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#1C1D1D] mb-3 sm:mb-4">
               {product.name}
             </h1>
 
             {/* Rating & Reviews */}
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               {renderStarRating(reviewStats?.averageRating ?? 0, 'md')}
-              <span className="text-sm text-[#646667] font-medium">
+              <span className="text-xs sm:text-sm text-[#646667] font-medium">
                 {reviewStatsLoading
                   ? 'Đang tải đánh giá...'
                   : reviewStatsError
@@ -512,9 +512,9 @@ const ProductDetail = () => {
             </div>
 
             {/* Price */}
-            <div className="flex flex-col gap-1 mb-6">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold text-[#9F86D9]">
+            <div className="flex flex-col gap-1 mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xl sm:text-2xl font-bold text-[#9F86D9]">
                   {formatCurrency(pricing?.finalPrice ?? 0)}
                 </span>
                 {hasDiscount && pricing && (
@@ -565,11 +565,11 @@ const ProductDetail = () => {
 
             {/* Variant Selection with Images */}
             {product.variants && product.variants.length > 0 && (
-              <div className="mb-6 pb-6 border-b border-[#DBE2E5]">
-                <div className="mb-4">
+              <div className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-[#DBE2E5]">
+                <div className="mb-3 sm:mb-4">
                   <span className="text-sm font-medium text-[#1C1D1D]">Phân Loại</span>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3 overflow-x-auto">
                   {product.variants.map((variant) => {
                     const isSelected = isVariantSelected(variant);
                     const variantPricing = resolveProductPricing(product, variant);
@@ -633,16 +633,16 @@ const ProductDetail = () => {
             )}
 
             {/* Quantity & Add to Cart */}
-            <div className="mb-6">
-              <div className="mb-4">
+            <div className="mb-4 sm:mb-6">
+              <div className="mb-3 sm:mb-4">
                 <span className="text-sm font-medium text-[#1C1D1D]">Số Lượng</span>
               </div>
               
               {/* Quantity Selector - Standalone */}
-              <div className="flex items-center border border-[#DBE2E5] rounded w-fit mb-4">
+              <div className="flex items-center border border-[#DBE2E5] rounded w-fit mb-3 sm:mb-4">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 flex items-center justify-center hover:bg-[#EFF2F3] transition-colors"
+                  className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-[#EFF2F3] transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M3 8h10" stroke="#646667" strokeWidth="1.5" strokeLinecap="round"/>
@@ -661,7 +661,7 @@ const ProductDetail = () => {
                 />
                 <button
                   onClick={() => setQuantity(Math.min(currentStock || 1, quantity + 1))}
-                  className="w-10 h-10 flex items-center justify-center hover:bg-[#EFF2F3] transition-colors"
+                  className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-[#EFF2F3] transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M8 3v10M3 8h10" stroke="#646667" strokeWidth="1.5" strokeLinecap="round"/>
@@ -670,12 +670,12 @@ const ProductDetail = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 {/* Add to Cart Button */}
                 <button 
                   onClick={handleAddToCart}
                   disabled={currentStock === 0 || addingToCart}
-                  className={`flex-1 h-12 flex items-center justify-center gap-2 border-2 rounded font-medium text-sm transition-colors ${
+                  className={`flex-1 h-14 sm:h-16 flex items-center justify-center gap-2 border-2 rounded-md px-4 sm:px-5 font-medium text-sm sm:text-base transition-colors ${
                     currentStock === 0 || addingToCart
                       ? 'border-gray-300 text-gray-400 cursor-not-allowed'
                       : 'border-[#9F86D9] text-[#9F86D9] hover:bg-[#9F86D9] hover:text-white'
@@ -683,12 +683,12 @@ const ProductDetail = () => {
                 >
                   {addingToCart ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-current"></div>
                       <span>Đang thêm...</span>
                     </>
                   ) : (
                     <>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <svg width="18" height="18" className="sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                       {currentStock === 0 ? 'Hết hàng' : 'Thêm Vào Giỏ Hàng'}
@@ -700,7 +700,7 @@ const ProductDetail = () => {
                 <button 
                   onClick={handleBuyNow}
                   disabled={currentStock === 0 || addingToCart}
-                  className={`flex-1 h-12 rounded font-medium text-sm transition-colors ${
+                  className={`flex-1 h-14 sm:h-16 rounded-md px-4 sm:px-5 font-medium text-sm sm:text-base transition-colors ${
                     currentStock === 0 || addingToCart
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-[#9F86D9] text-white hover:bg-[#8a75c4]'
@@ -714,8 +714,8 @@ const ProductDetail = () => {
             {/* Chi tiết sản phẩm (đã chuyển xuống tab) */}
           </div>
 
-          {/* Recommended Products Sidebar */}
-          <div className="w-[171px]">
+          {/* Recommended Products Sidebar - Hidden on mobile */}
+          <div className="hidden lg:block w-[171px]">
             <h3 className="text-base text-center text-[#646667] mb-6 leading-tight">
               Gợi ý<br />cho bạn
             </h3>
@@ -748,12 +748,12 @@ const ProductDetail = () => {
       </div>
 
       {/* Tabs Section */}
-      <div className="max-w-[1434px] mx-auto px-4 mb-16">
-        <div className="border-b-2 border-[#DBE2E5] mb-8">
-          <div className="flex gap-12">
+      <div className="max-w-[1434px] mx-auto px-4 mb-10 sm:mb-16">
+        <div className="border-b-2 border-[#DBE2E5] mb-6 sm:mb-8">
+          <div className="flex gap-6 sm:gap-8 lg:gap-12 overflow-x-auto">
             <button
               onClick={() => setActiveTab('description')}
-              className={`text-xl pb-4 ${
+              className={`text-base sm:text-lg lg:text-xl pb-3 sm:pb-4 whitespace-nowrap ${
                 activeTab === 'description'
                   ? 'text-[#9F86D9] border-b-2 border-[#9F86D9]'
                   : 'text-[#1C1D1D]'
@@ -763,7 +763,7 @@ const ProductDetail = () => {
             </button>
             <button
               onClick={() => setActiveTab('ingredients')}
-              className={`text-xl pb-4 ${
+              className={`text-base sm:text-lg lg:text-xl pb-3 sm:pb-4 whitespace-nowrap ${
                 activeTab === 'ingredients'
                   ? 'text-[#9F86D9] border-b-2 border-[#9F86D9]'
                   : 'text-[#1C1D1D]'
@@ -773,7 +773,7 @@ const ProductDetail = () => {
             </button>
             <button
               onClick={() => setActiveTab('vendor')}
-              className={`text-xl pb-4 ${
+              className={`text-base sm:text-lg lg:text-xl pb-3 sm:pb-4 whitespace-nowrap ${
                 activeTab === 'vendor'
                   ? 'text-[#9F86D9] border-b-2 border-[#9F86D9]'
                   : 'text-[#1C1D1D]'
@@ -785,9 +785,9 @@ const ProductDetail = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="flex gap-16">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
           {/* Left Content */}
-          <div className="flex-1 max-w-[1004px]">
+          <div className="flex-1 lg:max-w-[1004px]">
             {activeTab === 'description' && (
               <div className="space-y-6 text-base text-[#1C1D1D]">
                 <h3 className="text-xl font-bold text-[#1C1D1D]">MÔ TẢ SẢN PHẨM</h3>
@@ -885,9 +885,9 @@ const ProductDetail = () => {
           </div>
 
           {/* Right Sidebar - Customer Reviews */}
-          <div className="w-[336px]">
-            <h3 className="text-base font-bold text-[#9F86D9] mb-4">Đánh giá của khách hàng</h3>
-            <div className="space-y-3">
+          <div className="w-full lg:w-[336px]">
+            <h3 className="text-base font-bold text-[#9F86D9] mb-3 sm:mb-4">Đánh giá của khách hàng</h3>
+            <div className="space-y-2 sm:space-y-3">
               {reviewStatsLoading && (
                 <p className="text-sm text-gray-500">Đang tải thống kê...</p>
               )}

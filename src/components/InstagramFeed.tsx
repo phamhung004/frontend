@@ -94,17 +94,17 @@ const InstagramFeed = () => {
   }, []);
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-8 sm:py-12 lg:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4">
         {/* Section Header */}
-        <div ref={headerRef} className="text-center mb-12">
-          <h2 className="text-[32px] font-bold uppercase text-[#9F86D9] tracking-tight" style={{ fontFamily: 'Lobster Two' }}>
+        <div ref={headerRef} className="text-center mb-6 sm:mb-10 lg:mb-12">
+          <h2 className="text-xl sm:text-2xl lg:text-[32px] font-bold uppercase text-[#9F86D9] tracking-tight" style={{ fontFamily: 'Lobster Two' }}>
             instagram feed
           </h2>
         </div>
 
         {/* Instagram Grid */}
-        <div ref={gridRef} className="grid grid-cols-5 gap-1">
+        <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-2">
           {instagramPosts.map((post) => (
             <div key={post.id} className="insta-post group relative aspect-square overflow-hidden">
               <img 
@@ -116,10 +116,10 @@ const InstagramFeed = () => {
               {/* Hover Overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center space-x-2 text-white">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                   </svg>
-                  <span className="font-bold">{post.likes}</span>
+                  <span className="text-sm sm:text-base font-bold">{post.likes}</span>
                 </div>
               </div>
             </div>

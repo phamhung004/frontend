@@ -87,8 +87,8 @@
     "twitter": "Twitter",
     "youtube": "Youtube",
     "instagram": "Instagram",
-    "allRightsReserved": "© 2024 Kidify. Bản quyền thuộc về công ty.",
-    "email": "contact@kidify.com"
+    "allRightsReserved": "© 2024 Bigkid. Bản quyền thuộc về công ty.",
+    "email": "contact@bigkid.com"
   },
   "cart": {
     "title": "Giỏ hàng",
@@ -211,6 +211,9 @@
     "brand": "Thương hiệu",
     "ratingTitle": "Đánh giá",
     "ratingLabel": "{{count}} sao",
+    "filters": "Bộ lọc",
+    "applyFilters": "Áp dụng",
+    "reset": "Đặt lại",
     "latestProducts": "Sản phẩm mới nhất",
     "items": "sản phẩm",
     "showingResults": "Hiển thị {{from}}–{{to}} trong {{total}} kết quả",
