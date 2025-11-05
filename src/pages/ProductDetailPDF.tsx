@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../components/ui/ToastContainer';
 import { productService } from '../services/productService';
 import { pdfProductService } from '../services/pdfProductService';
 import type { Product, ProductDetail } from '../types/product';
 import InstagramFeed from '../components/InstagramFeed';
+import AuthModal from '../components/AuthModal';
 import { formatCurrency } from '../utils/currency';
 import { resolveProductPricing } from '../utils/pricing';
 import ReviewList from '../components/ReviewList';
@@ -14,12 +16,14 @@ const ProductDetailPDF = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('description');
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -100,13 +104,13 @@ const ProductDetailPDF = () => {
 
   const handleDownload = async () => {
     if (!user) {
-      alert('Vui lòng đăng nhập để tải xuống tài liệu miễn phí');
-      navigate('/login', { state: { from: `/product/${id}` } });
+      toast.info('Đăng nhập để tải xuống', 'Vui lòng đăng nhập để tải xuống tài liệu miễn phí');
+      setShowAuthModal(true);
       return;
     }
 
     if (typeof user.backendUserId !== 'number') {
-      alert('Không thể xác định tài khoản của bạn. Vui lòng đăng xuất và đăng nhập lại.');
+      toast.error('Lỗi xác thực', 'Không thể xác định tài khoản của bạn. Vui lòng đăng xuất và đăng nhập lại.');
       return;
     }
 
@@ -142,10 +146,10 @@ const ProductDetailPDF = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
       
-      alert('Tải xuống thành công! Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.');
+      toast.success('Tải xuống thành công!', 'Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.');
     } catch (err) {
       console.error('Download error:', err);
-      alert('Có lỗi xảy ra khi tải xuống. Vui lòng thử lại sau.');
+      toast.error('Lỗi tải xuống', 'Có lỗi xảy ra khi tải xuống. Vui lòng thử lại sau.');
     } finally {
       setDownloading(false);
     }
@@ -584,6 +588,9 @@ const ProductDetailPDF = () => {
 
       {/* Instagram Feed */}
       <InstagramFeed />
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 };

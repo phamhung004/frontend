@@ -4,13 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { formatCurrency } from '../utils/currency';
 import InstagramFeed from '../components/InstagramFeed';
+import AddressSelector from '../components/AddressSelector';
+import AddressFormModal from '../components/AddressFormModal';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/ToastContainer';
 import orderService, { type CheckoutAddress } from '../services/orderService';
 import couponService from '../services/couponService';
 import ghnService, { type GHNDistrict, type GHNProvince, type GHNWard } from '../services/ghnService';
+import addressService from '../services/addressService';
 import type { Coupon, CouponApplyResponse } from '../types/coupon';
+import type { SavedAddress, CreateAddressRequest } from '../types/address';
 
 const emptyAddress: CheckoutAddress = {
   firstName: '',
@@ -54,6 +58,13 @@ const Checkout = () => {
 
   const [billing, setBilling] = useState<CheckoutAddress>(emptyAddress);
   const [shipping, setShipping] = useState<CheckoutAddress>(emptyAddress);
+
+  // Address management states
+  const [useSavedAddress, setUseSavedAddress] = useState(true);
+  const [useSavedShipping, setUseSavedShipping] = useState(true);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
+  const [addressRefreshTrigger, setAddressRefreshTrigger] = useState(0);
 
   const [provinces, setProvinces] = useState<GHNProvince[]>([]);
   const [billingDistricts, setBillingDistricts] = useState<GHNDistrict[]>([]);
@@ -353,6 +364,93 @@ const Checkout = () => {
     }));
   };
 
+  // Handle saved address selection for billing
+  const handleSavedAddressSelect = (address: SavedAddress) => {
+    setBilling({
+      firstName: address.recipientName.split(' ')[0] || '',
+      lastName: address.recipientName.split(' ').slice(1).join(' ') || '',
+      email: user?.email || billing.email,
+      phone: address.phone,
+      address1: address.addressLine1,
+      address2: address.addressLine2 || '',
+      country: address.provinceName || '',
+      postcode: address.wardCode || '',
+    });
+
+    setBillingLocation({
+      provinceId: address.provinceId || null,
+      provinceName: address.provinceName || '',
+      districtId: address.districtId || null,
+      districtName: address.districtName || '',
+      wardCode: address.wardCode || '',
+      wardName: address.wardName || '',
+    });
+
+    // Load districts and wards for the saved address
+    if (address.provinceId) {
+      ghnService.getDistricts(address.provinceId).then(setBillingDistricts).catch(console.error);
+    }
+    if (address.districtId) {
+      ghnService.getWards(address.districtId).then(setBillingWards).catch(console.error);
+    }
+  };
+
+  // Handle saved address selection for shipping
+  const handleSavedShippingSelect = (address: SavedAddress) => {
+    setShipping({
+      firstName: address.recipientName.split(' ')[0] || '',
+      lastName: address.recipientName.split(' ').slice(1).join(' ') || '',
+      email: user?.email || shipping.email,
+      phone: address.phone,
+      address1: address.addressLine1,
+      address2: address.addressLine2 || '',
+      country: address.provinceName || '',
+      postcode: address.wardCode || '',
+    });
+
+    setShippingLocation({
+      provinceId: address.provinceId || null,
+      provinceName: address.provinceName || '',
+      districtId: address.districtId || null,
+      districtName: address.districtName || '',
+      wardCode: address.wardCode || '',
+      wardName: address.wardName || '',
+    });
+
+    // Load districts and wards for the saved address
+    if (address.provinceId) {
+      ghnService.getDistricts(address.provinceId).then(setShippingDistricts).catch(console.error);
+    }
+    if (address.districtId) {
+      ghnService.getWards(address.districtId).then(setShippingWards).catch(console.error);
+    }
+  };
+
+  // Handle creating new address from modal
+  const handleCreateAddress = async (data: CreateAddressRequest) => {
+    if (!user?.backendUserId) return;
+
+    try {
+      const newAddress = await addressService.createAddress(user.backendUserId, data);
+      toast.success(t('address.success.created'));
+      
+      // Trigger refresh of address list
+      setAddressRefreshTrigger(prev => prev + 1);
+      
+      // Auto-fill the form with the new address
+      if (isAddressModalOpen) {
+        handleSavedAddressSelect(newAddress);
+        setIsAddressModalOpen(false);
+      } else if (isShippingModalOpen) {
+        handleSavedShippingSelect(newAddress);
+        setIsShippingModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Failed to create address:', error);
+      toast.error(t('address.errors.saveFailed'));
+    }
+  };
+
   const formatAddressForSubmission = (address: CheckoutAddress, location: LocationSelection): CheckoutAddress => {
     const parts: string[] = [];
     if (address.address1?.trim()) {
@@ -614,6 +712,35 @@ const Checkout = () => {
 
             <h2 className="text-xl sm:text-2xl font-bold text-[#1C1D1D] mb-4 sm:mb-6">{t('checkout.billingDetails')}</h2>
             <form className="space-y-4 sm:space-y-6" onSubmit={handlePlaceOrder}>
+              {/* Saved Address Selector for Billing */}
+              {user && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={useSavedAddress}
+                        onChange={(e) => setUseSavedAddress(e.target.checked)}
+                        className="h-4 w-4 text-[#9F86D9] focus:ring-[#9F86D9] border-gray-300 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700" style={{ fontFamily: 'DM Sans' }}>
+                        {t('checkout.useSavedAddress')}
+                      </span>
+                    </label>
+                  </div>
+                  
+                  {useSavedAddress && (
+                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <AddressSelector
+                        onSelect={handleSavedAddressSelect}
+                        onAddNew={() => setIsAddressModalOpen(true)}
+                        refreshTrigger={addressRefreshTrigger}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-3 sm:space-y-4">
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <input
@@ -786,6 +913,36 @@ const Checkout = () => {
                 {differentAddress && (
                   <div className="mt-6 space-y-4">
                     <h3 className="text-xl font-bold text-[#1C1D1D]">{t('checkout.shippingDetails')}</h3>
+                    
+                    {/* Saved Address Selector for Shipping */}
+                    {user && (
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={useSavedShipping}
+                              onChange={(e) => setUseSavedShipping(e.target.checked)}
+                              className="h-4 w-4 text-[#9F86D9] focus:ring-[#9F86D9] border-gray-300 rounded"
+                            />
+                            <span className="text-sm font-medium text-gray-700" style={{ fontFamily: 'DM Sans' }}>
+                              {t('checkout.useSavedAddress')}
+                            </span>
+                          </label>
+                        </div>
+                        
+                        {useSavedShipping && (
+                          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                            <AddressSelector
+                              onSelect={handleSavedShippingSelect}
+                              onAddNew={() => setIsShippingModalOpen(true)}
+                              refreshTrigger={addressRefreshTrigger}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
                     <div className="flex flex-col md:flex-row gap-4">
                       <input
                         type="text"
@@ -1193,6 +1350,23 @@ const Checkout = () => {
       </div>
 
       <InstagramFeed />
+
+      {/* Address Form Modals */}
+      {isAddressModalOpen && (
+        <AddressFormModal
+          isOpen={isAddressModalOpen}
+          onClose={() => setIsAddressModalOpen(false)}
+          onSave={handleCreateAddress}
+        />
+      )}
+
+      {isShippingModalOpen && (
+        <AddressFormModal
+          isOpen={isShippingModalOpen}
+          onClose={() => setIsShippingModalOpen(false)}
+          onSave={handleCreateAddress}
+        />
+      )}
     </div>
   );
 };

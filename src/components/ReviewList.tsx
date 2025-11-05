@@ -4,6 +4,7 @@ import { HandThumbUpIcon as HandThumbUpSolidIcon, HandThumbDownIcon as HandThumb
 import reviewService from '../services/reviewService';
 import type { Review, ReviewStats } from '../types/review';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from './ui/ToastContainer';
 
 interface ReviewListProps {
   productId: number;
@@ -12,6 +13,7 @@ interface ReviewListProps {
 
 const ReviewList = ({ productId, onWriteReview }: ReviewListProps) => {
   const { user } = useAuth();
+  const toast = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,12 +56,12 @@ const ReviewList = ({ productId, onWriteReview }: ReviewListProps) => {
 
   const handleVote = async (reviewId: number, helpful: boolean) => {
     if (!user) {
-      alert('Vui lòng đăng nhập để đánh giá');
+      toast.warning('Yêu cầu đăng nhập', 'Vui lòng đăng nhập để đánh giá');
       return;
     }
 
     if (typeof user.backendUserId !== 'number') {
-      alert('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
+      toast.error('Lỗi xác thực', 'Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
       return;
     }
 
@@ -68,7 +70,7 @@ const ReviewList = ({ productId, onWriteReview }: ReviewListProps) => {
       setReviews(reviews.map(r => r.id === reviewId ? updatedReview : r));
     } catch (error) {
       console.error('Error voting:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      toast.error('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
     }
   };
 

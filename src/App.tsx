@@ -19,9 +19,11 @@ import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 // import Blog from './pages/Blog';
 import Admin from './pages/Admin';
+import OrderDetail from './pages/admin/OrderDetail';
 import Account from './pages/Account';
 import Notifications from './pages/account/Notifications';
 import Profile from './pages/account/Profile';
+import Address from './pages/Address';
 import Orders from './pages/account/Orders';
 import NotificationDemo from './pages/NotificationDemo';
 import Wishlist from './pages/Wishlist';
@@ -41,6 +43,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Admin />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/orders/:orderId" 
+              element={
+                <ProtectedRoute>
+                  <OrderDetail />
                 </ProtectedRoute>
               } 
             />
@@ -92,10 +102,7 @@ function App() {
                     >
                       <Route path="notifications" element={<Notifications />} />
                       <Route path="profile" element={<Profile />} />
-                      {/* <Route path="bank" element={<Profile />} /> */}
-                      {/* <Route path="address" element={<Profile />} /> */}
-                      {/* <Route path="password" element={<Profile />} /> */}
-                      {/* <Route path="privacy" element={<Profile />} /> */}
+                      <Route path="address" element={<Address />} />
                       <Route path="orders" element={<Orders />} />
                     </Route>
                   </Routes>

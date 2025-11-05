@@ -5,11 +5,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency } from '../utils/currency';
 import { useEffect } from 'react';
 import { resolveProductPricing } from '../utils/pricing';
+import { useToast } from '../components/ui/ToastContainer';
 
 const Wishlist = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const toast = useToast();
   const { wishlistItems, loading, removeFromWishlist } = useWishlist();
 
   useEffect(() => {
@@ -21,9 +23,10 @@ const Wishlist = () => {
   const handleRemove = async (productId: number) => {
     try {
       await removeFromWishlist(productId);
+      toast.success('Đã xóa', 'Sản phẩm đã được xóa khỏi danh sách yêu thích');
     } catch (error) {
       console.error('Error removing from wishlist:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      toast.error('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
     }
   };
 

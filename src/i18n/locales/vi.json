@@ -126,6 +126,7 @@
   "checkout": {
     "title": "Thanh toán",
     "couponNotice": "Bạn có phiếu giảm giá? Nhập mã của bạn ở đây",
+    "useSavedAddress": "Sử dụng địa chỉ đã lưu",
     "coupon": {
       "label": "Mã giảm giá",
       "placeholder": "Nhập mã giảm giá",
@@ -271,7 +272,11 @@
     "language": "Tiếng Việt",
     "loading": "Đang tải...",
     "cancel": "Hủy",
-    "uploading": "Đang tải lên..."
+    "uploading": "Đang tải lên...",
+    "optional": "Không bắt buộc",
+    "save": "Lưu",
+    "saving": "Đang lưu...",
+    "deleting": "Đang xóa..."
   },
   "userDropdown": {
     "myAccount": "Tài khoản của tôi",
@@ -676,6 +681,42 @@
         "REFUNDED": "Đã hoàn tiền"
       }
     },
+    "orderDetail": {
+      "title": "Chi tiết đơn hàng",
+      "loading": "Đang tải chi tiết đơn hàng...",
+      "notFound": "Không tìm thấy đơn hàng",
+      "backToOrders": "Quay lại danh sách",
+      "placedAt": "Đặt hàng lúc",
+      "print": "In hóa đơn",
+      "refresh": "Làm mới",
+      "orderStatus": "Trạng thái đơn hàng",
+      "paymentStatus": "Trạng thái thanh toán",
+      "paymentMethod": "Phương thức thanh toán",
+      "orderItems": "Sản phẩm trong đơn",
+      "quantity": "SL",
+      "unitPrice": "Đơn giá",
+      "subtotal": "Tạm tính",
+      "shippingFee": "Phí vận chuyển",
+      "tax": "Thuế",
+      "discount": "Giảm giá",
+      "couponApplied": "Mã giảm giá",
+      "total": "Tổng cộng",
+      "customerInfo": "Thông tin khách hàng",
+      "name": "Họ tên",
+      "email": "Email",
+      "phone": "Điện thoại",
+      "billingAddress": "Địa chỉ thanh toán",
+      "shippingAddress": "Địa chỉ giao hàng",
+      "orderInfo": "Thông tin đơn hàng",
+      "orderNumber": "Mã đơn hàng",
+      "orderId": "ID đơn hàng",
+      "itemsCount": "Số sản phẩm",
+      "items": "sản phẩm",
+      "notAvailable": "Không có",
+      "fetchFailure": "Không thể tải chi tiết đơn hàng.",
+      "updateSuccess": "Cập nhật đơn hàng thành công.",
+      "updateFailure": "Không thể cập nhật đơn hàng."
+    },
     "usersPage": {
       "title": "Quản lý tài khoản",
       "refresh": "Làm mới",
@@ -722,5 +763,58 @@
   "productAddedToCart": "Sản phẩm đã thêm vào giỏ",
   "paymentConfirmed": "Thanh toán đã xác nhận",
   "newCustomerRegistered": "Khách hàng mới đã đăng ký"
+  },
+  "address": {
+    "title": "Địa chỉ của tôi",
+    "addNew": "Thêm địa chỉ mới",
+    "addFirst": "Thêm địa chỉ đầu tiên",
+    "addTitle": "Thêm địa chỉ mới",
+    "editTitle": "Sửa địa chỉ",
+    "empty": "Bạn chưa có địa chỉ đã lưu.",
+    "default": "Mặc định",
+    "setDefault": "Đặt làm mặc định",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "confirmDelete": "Bạn có chắc muốn xóa địa chỉ này?",
+    "noSavedAddresses": "Chưa có địa chỉ đã lưu.",
+    "selectSaved": "Chọn từ địa chỉ đã lưu",
+    "form": {
+      "label": "Nhãn địa chỉ",
+      "labelPlaceholder": "VD: Nhà, Văn phòng, Nhà bố mẹ",
+      "recipientName": "Tên người nhận",
+      "phone": "Số điện thoại",
+      "province": "Tỉnh / Thành phố",
+      "selectProvince": "Chọn Tỉnh/Thành phố",
+      "district": "Quận / Huyện",
+      "selectDistrict": "Chọn Quận/Huyện",
+      "ward": "Phường / Xã",
+      "selectWard": "Chọn Phường/Xã",
+      "addressLine1": "Địa chỉ đường phố",
+      "addressLine1Placeholder": "Số nhà, tên đường",
+      "addressLine2": "Căn hộ, tòa nhà, v.v.",
+      "addressLine2Placeholder": "Căn hộ, tòa nhà, tầng, v.v.",
+      "setAsDefault": "Đặt làm địa chỉ mặc định"
+    },
+    "success": {
+      "created": "Thêm địa chỉ thành công!",
+      "updated": "Cập nhật địa chỉ thành công!",
+      "deleted": "Xóa địa chỉ thành công!",
+      "defaultSet": "Đã đặt địa chỉ mặc định!"
+    },
+    "errors": {
+      "loadFailed": "Không thể tải danh sách địa chỉ. Vui lòng thử lại.",
+      "saveFailed": "Không thể lưu địa chỉ. Vui lòng thử lại.",
+      "deleteFailed": "Không thể xóa địa chỉ. Vui lòng thử lại.",
+      "setDefaultFailed": "Không thể đặt địa chỉ mặc định. Vui lòng thử lại.",
+      "provinceLoad": "Không thể tải danh sách tỉnh/thành. Vui lòng thử lại.",
+      "districtLoad": "Không thể tải danh sách quận/huyện. Vui lòng thử lại.",
+      "wardLoad": "Không thể tải danh sách phường/xã. Vui lòng thử lại."
+    },
+    "validation": {
+      "recipientNameRequired": "Vui lòng nhập tên người nhận",
+      "phoneRequired": "Vui lòng nhập số điện thoại",
+      "addressRequired": "Vui lòng nhập địa chỉ đường phố",
+      "locationRequired": "Vui lòng chọn tỉnh/thành, quận/huyện và phường/xã"
+    }
   }
 }

@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useShop } from '../../contexts/ShopContext';
 import type { SortBy } from '../../types/shop';
 import Pagination from './Pagination';
+import { useToast } from '../ui/ToastContainer';
 
 interface ProductGridProps {
   onFilterClick?: () => void;
@@ -17,6 +18,7 @@ const ProductGrid = ({ onFilterClick }: ProductGridProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const toast = useToast();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { 
     productsResponse, 
@@ -138,7 +140,7 @@ const ProductGrid = ({ onFilterClick }: ProductGridProps) => {
     e.stopPropagation(); // Prevent navigation to product detail
     
     if (!user) {
-      alert('Vui lòng đăng nhập để thêm vào yêu thích');
+      toast.warning('Yêu cầu đăng nhập', 'Vui lòng đăng nhập để thêm vào yêu thích');
       return;
     }
 
@@ -147,7 +149,7 @@ const ProductGrid = ({ onFilterClick }: ProductGridProps) => {
       await toggleWishlist(productId);
     } catch (error) {
       console.error('Error toggling wishlist:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      toast.error('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
       setTogglingWishlist(null);
     }

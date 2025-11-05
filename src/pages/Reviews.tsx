@@ -8,9 +8,11 @@ import {
 } from '@heroicons/react/24/outline';
 import reviewService from '../services/reviewService';
 import type { Review, ReviewStatus } from '../types/review';
+import { useToast } from '../components/ui/ToastContainer';
 
 const Reviews = () => {
   const { t } = useTranslation();
+  const toast = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
@@ -42,16 +44,16 @@ const Reviews = () => {
     try {
       await reviewService.updateReviewStatus(reviewId, status);
       await fetchReviews();
-      alert(`Đánh giá đã được ${status === 'APPROVED' ? 'chấp nhận' : 'từ chối'}`);
+      toast.success('Cập nhật thành công', `Đánh giá đã được ${status === 'APPROVED' ? 'chấp nhận' : 'từ chối'}`);
     } catch (error) {
       console.error('Error updating review status:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      toast.error('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
     }
   };
 
   const handleReply = async (reviewId: number) => {
     if (!replyText.trim()) {
-      alert('Vui lòng nhập nội dung phản hồi');
+      toast.warning('Thiếu nội dung', 'Vui lòng nhập nội dung phản hồi');
       return;
     }
 
@@ -61,10 +63,10 @@ const Reviews = () => {
       await fetchReviews();
       setSelectedReview(null);
       setReplyText('');
-      alert('Phản hồi đã được gửi thành công');
+      toast.success('Gửi phản hồi thành công', 'Phản hồi đã được gửi thành công');
     } catch (error) {
       console.error('Error adding reply:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      toast.error('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }

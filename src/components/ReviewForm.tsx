@@ -5,6 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import reviewService from '../services/reviewService';
 import type { ReviewRequest } from '../types/review';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from './ui/ToastContainer';
 
 interface ReviewFormProps {
   productId: number;
@@ -15,6 +16,7 @@ interface ReviewFormProps {
 
 const ReviewForm = ({ productId, productName, onSuccess, onCancel }: ReviewFormProps) => {
   const { user } = useAuth();
+  const toast = useToast();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [title, setTitle] = useState('');
@@ -30,7 +32,7 @@ const ReviewForm = ({ productId, productName, onSuccess, onCancel }: ReviewFormP
 
     // Limit to 5 images
     if (images.length + files.length > 5) {
-      alert('Chỉ có thể tải lên tối đa 5 ảnh');
+      toast.warning('Giới hạn ảnh', 'Chỉ có thể tải lên tối đa 5 ảnh');
       return;
     }
 
@@ -43,13 +45,13 @@ const ReviewForm = ({ productId, productName, onSuccess, onCancel }: ReviewFormP
         
         // Validate file size (max 500KB for base64 storage)
         if (file.size > 500 * 1024) {
-          alert(`File ${file.name} quá lớn. Kích thước tối đa 500KB`);
+          toast.warning('File quá lớn', `File ${file.name} quá lớn. Kích thước tối đa 500KB`);
           continue;
         }
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-          alert(`File ${file.name} không phải là ảnh`);
+          toast.warning('Định dạng không hợp lệ', `File ${file.name} không phải là ảnh`);
           continue;
         }
 
@@ -66,7 +68,7 @@ const ReviewForm = ({ productId, productName, onSuccess, onCancel }: ReviewFormP
       setImages([...images, ...uploadedUrls]);
     } catch (error) {
       console.error('Error uploading images:', error);
-      alert('Có lỗi khi tải ảnh lên. Vui lòng thử lại.');
+      toast.error('Lỗi tải ảnh', 'Có lỗi khi tải ảnh lên. Vui lòng thử lại.');
     } finally {
       setUploading(false);
     }
@@ -99,12 +101,12 @@ const ReviewForm = ({ productId, productName, onSuccess, onCancel }: ReviewFormP
     e.preventDefault();
 
     if (!user) {
-      alert('Vui lòng đăng nhập để viết đánh giá');
+      toast.warning('Yêu cầu đăng nhập', 'Vui lòng đăng nhập để viết đánh giá');
       return;
     }
 
     if (typeof user.backendUserId !== 'number') {
-      alert('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
+      toast.error('Lỗi xác thực', 'Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
       return;
     }
 
@@ -124,7 +126,7 @@ const ReviewForm = ({ productId, productName, onSuccess, onCancel }: ReviewFormP
 
   await reviewService.createReview(request, user.backendUserId);
       
-      alert('Đánh giá của bạn đã được gửi và đang chờ duyệt. Cảm ơn bạn!');
+      toast.success('Gửi đánh giá thành công', 'Đánh giá của bạn đã được gửi và đang chờ duyệt. Cảm ơn bạn!');
       
       // Reset form
       setRating(5);
@@ -139,7 +141,7 @@ const ReviewForm = ({ productId, productName, onSuccess, onCancel }: ReviewFormP
     } catch (error: any) {
       console.error('Error submitting review:', error);
       const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
-      alert(errorMessage);
+      toast.error('Lỗi gửi đánh giá', errorMessage);
     } finally {
       setSubmitting(false);
     }

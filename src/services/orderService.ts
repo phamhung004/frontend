@@ -115,6 +115,10 @@ const orderService = {
     const response = await api.patch(`/orders/${orderId}/status`, payload);
     return response.data;
   },
+  getOrderDetail: async (orderId: number): Promise<CheckoutResponsePayload> => {
+    const response = await api.get(`/orders/detail/${orderId}`);
+    return response.data;
+  },
 };
 
 export default orderService;

@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import orderService, { type AdminOrderSummary } from '../../services/orderService';
 import { formatCurrency } from '../../utils/currency';
@@ -9,6 +10,7 @@ import { ORDER_STATUSES, PAYMENT_STATUSES } from '../../constants/order';
 const Orders = () => {
   const { t } = useTranslation();
   const toast = useToast();
+  const navigate = useNavigate();
 
   const [orders, setOrders] = useState<AdminOrderSummary[]>([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -218,7 +220,7 @@ const Orders = () => {
                     : t('admin.ordersPage.notAvailable');
 
                   return (
-                    <tr key={order.id} className="hover:bg-gray-50">
+                    <tr key={order.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/admin/orders/${order.id}`)}>
                       <td className="px-4 py-3 font-semibold text-brand-purple">{order.orderNumber}</td>
                       <td className="px-4 py-3">
                         <div className="text-gray-900">{customerDisplay}</div>

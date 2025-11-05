@@ -127,6 +127,7 @@
   "checkout": {
     "title": "Checkout",
     "couponNotice": "Have a coupon? Enter your code here",
+    "useSavedAddress": "Use saved address",
     "coupon": {
       "label": "Coupon Code",
       "placeholder": "Enter coupon code",
@@ -271,7 +272,11 @@
     "language": "English",
     "loading": "Loading...",
     "cancel": "Cancel",
-    "uploading": "Uploading..."
+    "uploading": "Uploading...",
+    "optional": "Optional",
+    "save": "Save",
+    "saving": "Saving...",
+    "deleting": "Deleting..."
   },
   "userDropdown": {
     "myAccount": "My Account",
@@ -676,6 +681,42 @@
         "REFUNDED": "Refunded"
       }
     },
+    "orderDetail": {
+      "title": "Order Details",
+      "loading": "Loading order details...",
+      "notFound": "Order not found",
+      "backToOrders": "Back to Orders",
+      "placedAt": "Placed at",
+      "print": "Print Invoice",
+      "refresh": "Refresh",
+      "orderStatus": "Order Status",
+      "paymentStatus": "Payment Status",
+      "paymentMethod": "Payment Method",
+      "orderItems": "Order Items",
+      "quantity": "Qty",
+      "unitPrice": "Unit Price",
+      "subtotal": "Subtotal",
+      "shippingFee": "Shipping",
+      "tax": "Tax",
+      "discount": "Discount",
+      "couponApplied": "Coupon",
+      "total": "Total",
+      "customerInfo": "Customer Information",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "billingAddress": "Billing Address",
+      "shippingAddress": "Shipping Address",
+      "orderInfo": "Order Information",
+      "orderNumber": "Order Number",
+      "orderId": "Order ID",
+      "itemsCount": "Items Count",
+      "items": "items",
+      "notAvailable": "N/A",
+      "fetchFailure": "Unable to load order details.",
+      "updateSuccess": "Order updated successfully.",
+      "updateFailure": "Unable to update order."
+    },
     "usersPage": {
       "title": "Account Management",
       "refresh": "Refresh",
@@ -722,5 +763,58 @@
     "productAddedToCart": "Product added to cart",
     "paymentConfirmed": "Payment confirmed",
     "newCustomerRegistered": "New customer registered"
+  },
+  "address": {
+    "title": "My Addresses",
+    "addNew": "Add New Address",
+    "addFirst": "Add your first address",
+    "addTitle": "Add New Address",
+    "editTitle": "Edit Address",
+    "empty": "You don't have any saved addresses yet.",
+    "default": "Default",
+    "setDefault": "Set as default",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this address?",
+    "noSavedAddresses": "No saved addresses yet.",
+    "selectSaved": "Select from saved addresses",
+    "form": {
+      "label": "Address Label",
+      "labelPlaceholder": "e.g., Home, Office, Parents House",
+      "recipientName": "Recipient Name",
+      "phone": "Phone Number",
+      "province": "Province / City",
+      "selectProvince": "Select Province",
+      "district": "District",
+      "selectDistrict": "Select District",
+      "ward": "Ward",
+      "selectWard": "Select Ward",
+      "addressLine1": "Street Address",
+      "addressLine1Placeholder": "House number, street name",
+      "addressLine2": "Apartment, suite, etc.",
+      "addressLine2Placeholder": "Apartment, suite, floor, etc.",
+      "setAsDefault": "Set as default address"
+    },
+    "success": {
+      "created": "Address added successfully!",
+      "updated": "Address updated successfully!",
+      "deleted": "Address deleted successfully!",
+      "defaultSet": "Default address set successfully!"
+    },
+    "errors": {
+      "loadFailed": "Failed to load addresses. Please try again.",
+      "saveFailed": "Failed to save address. Please try again.",
+      "deleteFailed": "Failed to delete address. Please try again.",
+      "setDefaultFailed": "Failed to set default address. Please try again.",
+      "provinceLoad": "Failed to load provinces. Please try again.",
+      "districtLoad": "Failed to load districts. Please try again.",
+      "wardLoad": "Failed to load wards. Please try again."
+    },
+    "validation": {
+      "recipientNameRequired": "Recipient name is required",
+      "phoneRequired": "Phone number is required",
+      "addressRequired": "Street address is required",
+      "locationRequired": "Please select province, district, and ward"
+    }
   }
 }
