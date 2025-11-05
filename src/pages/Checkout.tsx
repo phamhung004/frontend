@@ -534,7 +534,7 @@ const Checkout = () => {
 
     setPlacingOrder(true);
     try {
-      const response = await orderService.placeOrder({
+      await orderService.placeOrder({
         userId: user?.backendUserId,
         sessionId: currentSessionId,
         billing: formattedBilling,
