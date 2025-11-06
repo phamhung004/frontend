@@ -3,6 +3,10 @@
     { 
       "source": "/api/(.*)", 
       "destination": "https://backend-swqd.onrender.com/api/$1" 
+    },
+    {
+      "source": "/((?!assets|images|fonts|_next|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot)).*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
