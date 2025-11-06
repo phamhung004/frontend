@@ -505,38 +505,40 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-white relative overflow-x-hidden pb-20 sm:pb-0">
       {/* Fixed CTA Bar - Shows after scroll */}
       {showFixedCTA && (
         <div className="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-50 border-t-2 border-gray-200">
-          <div className="max-w-[1200px] mx-auto px-4 py-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <img src={heroImage} alt={heroImageAlt} className="w-12 h-12 rounded object-cover" />
-                <div>
-                  <p className="font-bold text-sm line-clamp-1">{product.name}</p>
-                  <p className="text-red-600 font-bold text-lg">{formatCurrency(pricing?.finalPrice ?? 0)}</p>
+          <div className="max-w-[1200px] mx-auto px-2 sm:px-4 py-2 sm:py-3">
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <img src={heroImage} alt={heroImageAlt} className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  {/* Limit product name width so action buttons have room (truncates long names) */}
+                  <p className="font-bold text-xs sm:text-sm line-clamp-1 truncate max-w-[140px] sm:max-w-[280px]">{product.name}</p>
+                  <p className="text-red-600 font-bold text-sm sm:text-lg">{formatCurrency(pricing?.finalPrice ?? 0)}</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2 flex-shrink-0">
                 <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className={`px-4 py-2 border-2 border-[#9F86D9] text-[#9F86D9] rounded-lg font-bold text-sm transition-all whitespace-nowrap ${addingToCart ? 'opacity-60 cursor-not-allowed' : 'hover:bg-purple-50'}`}
+                  className={`px-2 py-2 sm:px-4 border-2 border-[#9F86D9] text-[#9F86D9] rounded-lg font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${addingToCart ? 'opacity-60 cursor-not-allowed' : 'hover:bg-purple-50'}`}
                 >
                   {addingToCart ? (
-                    <span className="flex items-center gap-2">
-                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-                      <span>Đang thêm...</span>
+                    <span className="flex items-center gap-1">
+                      <span className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-current" />
+                      <span className="hidden sm:inline">Đang thêm...</span>
                     </span>
                   ) : (
-                    'Thêm vào Giỏ hàng'
+                    <span className="hidden sm:inline">Thêm vào Giỏ hàng</span>
                   )}
+                  {!addingToCart && <span className="sm:hidden">Thêm vào giỏ hàng</span>}
                 </button>
 
                 <button
                   onClick={scrollToOrder}
-                  className="px-6 py-2 bg-[#9F86D9] text-white rounded-lg font-bold text-sm hover:bg-[#8a75c4] transition-all whitespace-nowrap"
+                  className="px-3 py-2 sm:px-6 bg-[#9F86D9] text-white rounded-lg font-bold text-xs sm:text-sm hover:bg-[#8a75c4] transition-all whitespace-nowrap"
                 >
                   Mua Ngay
                 </button>
@@ -968,7 +970,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
           </div>
 
           {/* Order Form Section */}
-          <div id="order-section" className="mt-8 border-t border-gray-200 pt-6 scroll-mt-20">
+          <div id="order-section" className="mt-8 border-t border-gray-200 pt-6 scroll-mt-20 mb-20 sm:mb-0">
             <div className="lg:max-w-md mx-auto">
               <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
                 <h3 className="text-base sm:text-lg font-bold mb-4">1. Combo gồm</h3>
@@ -983,9 +985,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
                   </div>
                 </div>
 
-              <button className="w-full bg-white border-2 border-[#9F86D9] text-[#9F86D9] py-3 rounded-lg font-bold mb-4 hover:bg-purple-50 transition-colors text-sm sm:text-base">
-                Deal hời - Mua ngay!
-              </button>                <div className="mb-4 pb-4 border-b border-gray-200">
+                <div className="mb-4 pb-4 border-b border-gray-200">
                   <h4 className="font-bold mb-2 text-sm sm:text-base">{product.name}</h4>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs sm:text-sm text-gray-500">Giá gốc:</span>
