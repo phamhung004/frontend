@@ -9,7 +9,9 @@ import reviewService from '../services/reviewService';
 import type { Product, ProductDetail, ProductVariant } from '../types/product';
 import type { ReviewStats } from '../types/review';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/ToastContainer';
+import AuthModal from '../components/AuthModal';
 import ProductLanding from './ProductLanding';
 import ReviewList from '../components/ReviewList';
 import ReviewForm from '../components/ReviewForm';
@@ -18,6 +20,7 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart, cart } = useCart();
+  const { user } = useAuth();
   const toast = useToast();
   
   const [product, setProduct] = useState<ProductDetail | null>(null);
@@ -31,6 +34,7 @@ const ProductDetail = () => {
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('description');
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const [reviewStatsLoading, setReviewStatsLoading] = useState(false);
@@ -267,6 +271,12 @@ const ProductDetail = () => {
 
   // Add to cart handler
   const handleAddToCart = async (): Promise<boolean> => {
+    if (!user) {
+      toast.info('Đăng nhập để mua hàng', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      setShowAuthModal(true);
+      return false;
+    }
+
     if (!product) return false;
     
     if (currentStock <= 0) {
@@ -323,6 +333,12 @@ const ProductDetail = () => {
 
   // Buy now handler
   const handleBuyNow = async () => {
+    if (!user) {
+      toast.info('Đăng nhập để mua hàng', 'Vui lòng đăng nhập để tiếp tục mua hàng');
+      setShowAuthModal(true);
+      return;
+    }
+
     const added = await handleAddToCart();
     if (added) {
       navigate('/cart');
@@ -706,7 +722,14 @@ const ProductDetail = () => {
                       : 'bg-[#9F86D9] text-white hover:bg-[#8a75c4]'
                   }`}
                 >
-                  {currentStock === 0 ? 'Hết hàng' : 'Mua Ngay'}
+                  {addingToCart ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white" />
+                      <span>Đang xử lý...</span>
+                    </span>
+                  ) : (
+                    (currentStock === 0 ? 'Hết hàng' : 'Mua Ngay')
+                  )}
                 </button>
               </div>
             </div>
@@ -923,6 +946,9 @@ const ProductDetail = () => {
 
       {/* Instagram Feed */}
       <InstagramFeed />
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 };

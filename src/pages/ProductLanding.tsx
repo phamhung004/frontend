@@ -7,6 +7,8 @@ import { productService } from '../services/productService';
 import type { ProductDetail, ProductVariant } from '../types/product';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../components/ui/ToastContainer';
+import { useAuth } from '../contexts/AuthContext';
+import AuthModal from '../components/AuthModal';
 import ghnService, { type GHNDistrict, type GHNProvince, type GHNWard } from '../services/ghnService';
 
 interface ProductLandingProps {
@@ -17,6 +19,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { addToCart, cart } = useCart();
+  const { user } = useAuth();
   const toast = useToast();
   
   const [quantity, setQuantity] = useState(1);
@@ -27,6 +30,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 30 });
   const [addingToCart, setAddingToCart] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'description' | 'recommendations'>('overview');
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const [loading, setLoading] = useState(!initialProduct);
   const [error, setError] = useState<string | null>(null);
@@ -397,6 +401,12 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
 
   // Add to cart handler
   const handleAddToCart = async (): Promise<boolean> => {
+    if (!user) {
+      toast.info('Đăng nhập để mua hàng', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      setShowAuthModal(true);
+      return false;
+    }
+
     if (!product) return false;
     
     if (currentStock <= 0) {
@@ -453,6 +463,12 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
 
   // Buy now handler
   const handleBuyNow = async () => {
+    if (!user) {
+      toast.info('Đăng nhập để mua hàng', 'Vui lòng đăng nhập để tiếp tục mua hàng');
+      setShowAuthModal(true);
+      return;
+    }
+
     const added = await handleAddToCart();
     if (added) {
       navigate('/cart');
@@ -505,10 +521,19 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
               <div className="flex gap-2">
                 <button
                   onClick={handleAddToCart}
-                  className="px-4 py-2 border-2 border-[#9F86D9] text-[#9F86D9] rounded-lg font-bold text-sm hover:bg-purple-50 transition-all whitespace-nowrap"
+                  disabled={addingToCart}
+                  className={`px-4 py-2 border-2 border-[#9F86D9] text-[#9F86D9] rounded-lg font-bold text-sm transition-all whitespace-nowrap ${addingToCart ? 'opacity-60 cursor-not-allowed' : 'hover:bg-purple-50'}`}
                 >
-                  Thêm vào Giỏ hàng
+                  {addingToCart ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                      <span>Đang thêm...</span>
+                    </span>
+                  ) : (
+                    'Thêm vào Giỏ hàng'
+                  )}
                 </button>
+
                 <button
                   onClick={scrollToOrder}
                   className="px-6 py-2 bg-[#9F86D9] text-white rounded-lg font-bold text-sm hover:bg-[#8a75c4] transition-all whitespace-nowrap"
@@ -1076,15 +1101,24 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
                   </button>
                   <button
                     onClick={handleBuyNow}
-                    disabled={currentStock === 0 || addingToCart}
-                    className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${
-                      currentStock === 0 || addingToCart
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-[#9F86D9] text-white hover:bg-[#8a75c4] shadow-md'
-                    }`}
-                  >
-                    {currentStock === 0 ? 'Hết hàng' : 'Mua Ngay'}
-                  </button>
+                      disabled={currentStock === 0 || addingToCart}
+                      className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${
+                        currentStock === 0 || addingToCart
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-[#9F86D9] text-white hover:bg-[#8a75c4] shadow-md'
+                      }`}
+                    >
+                      {addingToCart ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                          <span>Đang xử lý...</span>
+                        </span>
+                      ) : currentStock === 0 ? (
+                        'Hết hàng'
+                      ) : (
+                        'Mua Ngay'
+                      )}
+                    </button>
                 </div>
               </div>
             </div>
@@ -1693,6 +1727,9 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
           </div>
         </div>
       </section>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 };
