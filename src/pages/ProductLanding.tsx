@@ -892,40 +892,42 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
           {/* Description/Introduction Section */}
           <div id="section-description" className="mt-8 border-t border-gray-200 pt-6 scroll-mt-20">
             <h2 className="text-xl font-bold mb-4">Giới thiệu về sản phẩm này</h2>
-            <div className="text-sm text-gray-700 space-y-3">
-              <p className="font-bold">Chi tiết</p>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>
-                  <strong>Combo Sách Tiên Tiểu Học</strong> là bộ tài liệu tuyệt với giúp trẻ em từ 4 đến 7 tuổi chuẩn bị tốt nhất cho hành trình học tập sắp tới. Bộ sách này bao gồm:
-                </li>
-                <li>
-                  <strong>Tập Đọc:</strong>
-                  <br />
-                  Nội dung: Các câu chuyện ngắn, hình ảnh sinh động và bài tập đọc để hiểu giúp trẻ phát triển kỹ năng đọc và tư duy.
-                </li>
-                <li>
-                  Lợi ích: Khuyến khích trẻ yêu thích việc đọc sách, mở rộng vốn từ vựng và cải thiện khả năng ngữ âm.
-                </li>
-                <li>
-                  <strong>Tập Viết:</strong>
-                  <br />
-                  Nội dung: Các bài tập viết chữ cái, từ vựng cơ bản đến câu đơn giản, đi kèm với hướng dẫn cụ thể.
-                </li>
-                <li>
-                  Lợi ích: Giúp trẻ rèn luyện kỹ năng viết tay, tăng cường sự tự tin khi khả năng diễn đạt ý tưởng.
-                </li>
-                <li>
-                  <strong>Tập Đếm Số:</strong>
-                  <br />
-                  Nội dung: Các bài tập đếm số từ 1 đến 100, bài toán đơn giản và các trò chơi thú vị liên quan đến số học.
-                </li>
-                <li>
-                  Lợi ích: Phát triển tư duy logic, khả năng tính toán và sự hiểu biết về các khái niệm cơ bản trong toán học.
-                </li>
-              </ul>
+            <div className="text-sm text-gray-700 space-y-4">
+              {/* Short Description */}
+              {product.shortDescription && (
+                <div>
+                  <p className="font-bold mb-2">Mô tả ngắn</p>
+                  <p className="whitespace-pre-wrap">{product.shortDescription}</p>
+                </div>
+              )}
+
+              {/* Long Description */}
+              {product.longDescription && (
+                <div>
+                  <p className="font-bold mb-2">Mô tả chi tiết</p>
+                  <div 
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: product.longDescription }}
+                  />
+                </div>
+              )}
+
+              {/* Fallback if no descriptions */}
+              {!product.shortDescription && !product.longDescription && (
+                <p className="text-gray-500 italic">Chưa có thông tin mô tả cho sản phẩm này.</p>
+              )}
+
+              {/* Product Images */}
               {galleryImages.length > 0 && (
-                <div className="mt-4">
-                  <img src={galleryImages[0]?.src} alt="Product detail" className="w-full rounded-lg" />
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {galleryImages.slice(0, 4).map((image, index) => (
+                    <img 
+                      key={index} 
+                      src={image.src} 
+                      alt={image.alt} 
+                      className="w-full rounded-lg border border-gray-200 hover:shadow-lg transition-shadow" 
+                    />
+                  ))}
                 </div>
               )}
             </div>
