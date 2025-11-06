@@ -14,8 +14,8 @@ const Cart = () => {
   const toast = useToast();
 
   const [discountCode, setDiscountCode] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('USA');
-  const [shippingCalculated, setShippingCalculated] = useState(false);
+  // const [selectedCountry, setSelectedCountry] = useState('USA');
+  // const [shippingCalculated, setShippingCalculated] = useState(false);
   const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
   const [removingItemId, setRemovingItemId] = useState<number | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
