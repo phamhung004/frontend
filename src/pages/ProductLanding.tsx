@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { KeyboardEvent } from 'react';
+import type { KeyboardEvent, ChangeEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatCurrency } from '../utils/currency';
 import { resolveProductPricing } from '../utils/pricing';
@@ -7,6 +7,7 @@ import { productService } from '../services/productService';
 import type { ProductDetail, ProductVariant } from '../types/product';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../components/ui/ToastContainer';
+import ghnService, { type GHNDistrict, type GHNProvince, type GHNWard } from '../services/ghnService';
 
 interface ProductLandingProps {
   initialProduct?: ProductDetail | null;
@@ -25,9 +26,21 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
   const [showFixedCTA, setShowFixedCTA] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 30 });
   const [addingToCart, setAddingToCart] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'description' | 'recommendations'>('overview');
 
   const [loading, setLoading] = useState(!initialProduct);
   const [error, setError] = useState<string | null>(null);
+
+  // Address states
+  const [provinces, setProvinces] = useState<GHNProvince[]>([]);
+  const [districts, setDistricts] = useState<GHNDistrict[]>([]);
+  const [wards, setWards] = useState<GHNWard[]>([]);
+  const [selectedProvince, setSelectedProvince] = useState<number | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<number | null>(null);
+  const [selectedWard, setSelectedWard] = useState<string>('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
 
   const placeholderImage = '/images/placeholder.webp';
   const DEFAULT_LANDING_PRODUCT_ID = 1;
@@ -75,6 +88,64 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
 
     fetchProduct();
   }, [initialProduct, landingProductId]);
+
+  // Load provinces on mount
+  useEffect(() => {
+    const loadProvinces = async () => {
+      try {
+        const data = await ghnService.getProvinces();
+        setProvinces(data);
+      } catch (error) {
+        console.error('Failed to load provinces:', error);
+        toast.error('Không thể tải danh sách tỉnh thành');
+      }
+    };
+
+    void loadProvinces();
+  }, [toast]);
+
+  // Handle province change
+  const handleProvinceChange = async (event: ChangeEvent<HTMLSelectElement>) => {
+    const provinceId = event.target.value ? Number(event.target.value) : null;
+    setSelectedProvince(provinceId);
+    setSelectedDistrict(null);
+    setSelectedWard('');
+    setDistricts([]);
+    setWards([]);
+
+    if (!provinceId) return;
+
+    try {
+      const districtData = await ghnService.getDistricts(provinceId);
+      setDistricts(districtData);
+    } catch (error) {
+      console.error('Failed to load districts:', error);
+      toast.error('Không thể tải danh sách quận/huyện');
+    }
+  };
+
+  // Handle district change
+  const handleDistrictChange = async (event: ChangeEvent<HTMLSelectElement>) => {
+    const districtId = event.target.value ? Number(event.target.value) : null;
+    setSelectedDistrict(districtId);
+    setSelectedWard('');
+    setWards([]);
+
+    if (!districtId) return;
+
+    try {
+      const wardData = await ghnService.getWards(districtId);
+      setWards(wardData);
+    } catch (error) {
+      console.error('Failed to load wards:', error);
+      toast.error('Không thể tải danh sách phường/xã');
+    }
+  };
+
+  // Handle ward change
+  const handleWardChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedWard(event.target.value);
+  };
 
   const variantOptions = useMemo<ProductVariant[]>(() => {
     if (!product) return [];
@@ -246,11 +317,24 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
     return () => clearInterval(timer);
   }, []);
 
-  // Show fixed CTA when scrolling
+  // Show fixed CTA when scrolling and track active section
   useEffect(() => {
     const handleScroll = () => {
       setShowFixedCTA(window.scrollY > 800);
+
+      // Update active tab based on scroll position
+      const sections = ['overview', 'reviews', 'description', 'recommendations'];
+      const scrollPosition = window.scrollY + 100; // Offset for better UX
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = document.getElementById(`section-${sections[i]}`);
+        if (section && section.offsetTop <= scrollPosition) {
+          setActiveTab(sections[i] as 'overview' | 'reviews' | 'description' | 'recommendations');
+          break;
+        }
+      }
     };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -408,166 +492,607 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
     <div className="min-h-screen bg-white relative overflow-x-hidden">
       {/* Fixed CTA Bar - Shows after scroll */}
       {showFixedCTA && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-50 border-t-2 sm:border-t-4 border-[#9F86D9]">
-          <div className="max-w-[1434px] mx-auto px-3 sm:px-4 py-2 sm:py-4">
-            <div className="flex items-center justify-between gap-2 sm:gap-4">
-              <div className="flex items-center gap-2 sm:gap-6">
-                <img src={heroImage} alt={heroImageAlt} className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-contain shadow-md" />
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-50 border-t-2 border-gray-200">
+          <div className="max-w-[1200px] mx-auto px-4 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <img src={heroImage} alt={heroImageAlt} className="w-12 h-12 rounded object-cover" />
                 <div>
-                  <p className="font-bold text-[#1C1D1D] text-xs sm:text-base lg:text-lg line-clamp-1">{product.name}</p>
-                  <p className="text-[#9F86D9] font-bold text-sm sm:text-lg lg:text-xl">{formatCurrency(pricing?.finalPrice ?? 0)}</p>
+                  <p className="font-bold text-sm line-clamp-1">{product.name}</p>
+                  <p className="text-red-600 font-bold text-lg">{formatCurrency(pricing?.finalPrice ?? 0)}</p>
                 </div>
               </div>
-              <button
-                onClick={scrollToOrder}
-                className="px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-4 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white rounded-lg font-bold text-xs sm:text-sm lg:text-base hover:shadow-xl transition-all hover:scale-105 whitespace-nowrap flex-shrink-0"
-              >
-                🔥 ĐẶT NGAY{pricing && pricing.discountAmount > 0 ? ` -${formatCurrency(pricing.discountAmount)}` : ''}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddToCart}
+                  className="px-4 py-2 border-2 border-[#9F86D9] text-[#9F86D9] rounded-lg font-bold text-sm hover:bg-purple-50 transition-all whitespace-nowrap"
+                >
+                  Thêm vào Giỏ hàng
+                </button>
+                <button
+                  onClick={scrollToOrder}
+                  className="px-6 py-2 bg-[#9F86D9] text-white rounded-lg font-bold text-sm hover:bg-[#8a75c4] transition-all whitespace-nowrap"
+                >
+                  Mua Ngay
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Hero Section - Above The Fold */}
-      <section className="relative bg-gradient-to-br from-[#FFF9E5] via-[#F5F2FF] to-[#E5F9FF] py-8 sm:py-12 lg:py-16 overflow-hidden">
-        {/* Decorative Elements */}
-        <div className="absolute top-5 left-5 sm:top-10 sm:left-10 w-12 h-12 sm:w-20 sm:h-20 bg-[#FCC605] rounded-full opacity-20 animate-bounce"></div>
-        <div className="absolute bottom-5 right-5 sm:bottom-10 sm:right-10 w-16 h-16 sm:w-32 sm:h-32 bg-[#9F86D9] rounded-full opacity-10 animate-pulse"></div>
-        <div className="hidden sm:block absolute top-1/2 left-1/4 w-16 h-16 bg-[#39F5C4] rounded-full opacity-20"></div>
-
-        <div className="max-w-[1434px] mx-auto px-4 relative z-10">
-          {/* Urgency Banner */}
-          <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full shadow-xl animate-pulse">
-              <span className="text-lg sm:text-2xl">🔥</span>
-              <span className="font-bold text-xs sm:text-sm lg:text-lg">FLASH SALE HÔM NAY - GIẢM ĐẾN 21%</span>
-              <span className="text-lg sm:text-2xl">🔥</span>
+      {/* Hero Section */}
+      <section className="relative bg-white pb-4">
+        {/* Sticky Navigation Tabs - Fixed with higher z-index */}
+        <div className="sticky top-0 bg-white z-[100] shadow-md border-b border-gray-200">
+          <div className="max-w-[1200px] mx-auto px-4">
+            <div className="flex overflow-x-auto scrollbar-hide">
+              {[
+                { id: 'overview' as const, label: 'Tổng quan' },
+                { id: 'reviews' as const, label: 'Đánh giá' },
+                { id: 'description' as const, label: 'Mô tả' },
+                { id: 'recommendations' as const, label: 'Đề xuất' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    const section = document.getElementById(`section-${tab.id}`);
+                    if (section) {
+                      const yOffset = -80; // Offset for sticky header
+                      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                      window.scrollTo({ top: y, behavior: 'smooth' });
+                    }
+                  }}
+                  className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium whitespace-nowrap transition-all ${
+                    activeTab === tab.id
+                      ? 'text-[#9F86D9] border-b-2 border-[#9F86D9] bg-purple-50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 items-center">
-            {/* Left - Hero Content */}
-            <div className="space-y-4 sm:space-y-6 lg:space-y-8">
-              {/* Headline */}
-              <div>
-                <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-[#1C1D1D] leading-tight mb-3 sm:mb-4">
-                  Bé Yêu Thích
-                  <span className="text-[#9F86D9] block">Tô Màu Mỗi Ngày?</span>
-                </h1>
-                <p className="text-base sm:text-xl lg:text-2xl text-[#646667] font-medium leading-relaxed">
-                  Tặng con combo <strong className="text-[#E35946]">{product.name}</strong> -
-                  phát triển sáng tạo, khéo léo và tư duy ngay từ nhỏ! 🎨
-                </p>
-              </div>
+        <div className="max-w-[1200px] mx-auto px-4 mt-4">
 
-              {/* Social Proof */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                <div className="flex -space-x-2 sm:-space-x-3">
-                  {['👧', '👦', '👶', '👨', '👩'].map((emoji, i) => (
-                    <div key={i} className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-[#9F86D9] to-[#B79FE8] rounded-full border-2 sm:border-4 border-white flex items-center justify-center text-sm sm:text-base lg:text-xl shadow-md">
-                      {emoji}
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <p className="text-[#1C1D1D] font-bold text-sm sm:text-base lg:text-lg">342+ gia đình đã mua</p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className="text-[#FCC605] text-sm sm:text-base lg:text-lg">★</span>
-                      ))}
-                    </div>
-                    <span className="text-[#646667] font-medium text-xs sm:text-sm">4.9/5 (128 đánh giá)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Key Benefits */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
-                {[
-                  { icon: '✅', text: 'Giấy dày, không lem' },
-                  { icon: '✅', text: 'An toàn cho bé' },
-                  { icon: '✅', text: 'Nhiều hình dễ thương' },
-                  { icon: '✅', text: 'Miễn phí vận chuyển' },
-                ].map((benefit, i) => (
-                  <div key={i} className="flex items-center gap-2 sm:gap-3 bg-white rounded-lg sm:rounded-xl px-2 sm:px-3 lg:px-4 py-2 sm:py-3 shadow-md">
-                    <span className="text-lg sm:text-xl lg:text-2xl flex-shrink-0">{benefit.icon}</span>
-                    <span className="font-medium text-[#1C1D1D] text-xs sm:text-sm lg:text-base">{benefit.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* CTA Button */}
-              <button
-                onClick={scrollToOrder}
-                className="w-full py-3 sm:py-4 lg:py-6 bg-gradient-to-r from-[#E35946] to-[#F25E17] text-white rounded-lg sm:rounded-xl lg:rounded-2xl font-bold text-sm sm:text-base lg:text-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all relative overflow-hidden group"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
-                  <span>
-                    🛒 ĐẶT HÀNG NGAY
-                    {pricing && pricing.discountAmount > 0 ? ` - ${formatCurrency(pricing.discountAmount)}` : ''}
-                  </span>
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#F25E17] to-[#E35946] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </button>
-
-              {/* Countdown Timer */}
-              <div className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-xl border-2 border-[#FCC605]">
-                <p className="text-center text-[#646667] font-medium text-xs sm:text-sm lg:text-base mb-2 sm:mb-3">⏰ Ưu đãi kết thúc sau:</p>
-                <div className="flex justify-center gap-2 sm:gap-3 lg:gap-4">
-                  {[
-                    { label: 'Giờ', value: timeLeft.hours },
-                    { label: 'Phút', value: timeLeft.minutes },
-                    { label: 'Giây', value: timeLeft.seconds },
-                  ].map((time, i) => (
-                    <div key={i} className="text-center">
-                      <div className="bg-gradient-to-br from-[#E35946] to-[#F25E17] text-white text-xl sm:text-2xl lg:text-4xl font-bold w-12 h-12 sm:w-14 sm:h-14 lg:w-20 lg:h-20 rounded-md sm:rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg">
-                        {String(time.value).padStart(2, '0')}
-                      </div>
-                      <p className="text-xs sm:text-sm text-[#646667] font-medium mt-1 sm:mt-2">{time.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right - Product Hero Image */}
-            <div className="relative mt-8 lg:mt-0">
-              {/* Badge */}
-              <div className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 z-20 bg-gradient-to-br from-[#E35946] to-[#F25E17] text-white rounded-full w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 flex flex-col items-center justify-center shadow-2xl rotate-12 animate-bounce">
-                <span className="text-xl sm:text-2xl lg:text-3xl font-bold">-21%</span>
-                <span className="text-xs sm:text-sm">GIẢM GIÁ</span>
-              </div>
-
-              {/* Main Image */}
-              <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-500">
+          {/* Overview Section */}
+          <div id="section-overview" className="scroll-mt-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
+              {/* Left - Product Image */}
+              <div className="space-y-4">
+              {/* Main Product Image with Badges */}
+              <div className="relative bg-gray-50 rounded-lg p-4 lg:p-6">
                 <img
                   src={heroImage}
                   alt={heroImageAlt}
-                  className="w-full h-64 sm:h-96 lg:h-[600px] object-contain"
+                  className="w-full rounded-lg object-contain max-h-96 lg:max-h-[500px]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                
+                {/* Badges on Image */}
+                <div className="absolute top-2 left-2 lg:top-4 lg:left-4 flex flex-col gap-2">
+                  {/* EXTRA Badge */}
+                  <div className="bg-[#00BFA5] text-white px-2 py-1 lg:px-3 lg:py-1.5 rounded text-xs lg:text-sm font-bold shadow-md">
+                    <span>EXTRA</span>
+                  </div>
+                  
+                  {/* BONUS Badge */}
+                  <div className="bg-[#FFD600] text-black px-2 py-1 lg:px-3 lg:py-1.5 rounded text-xs lg:text-sm font-bold shadow-md">
+                    <span>BONUS</span>
+                  </div>
+                </div>
+
+                {/* Price and Discount Badge */}
+                <div className="absolute bottom-2 left-2 right-2 lg:bottom-4 lg:left-4 lg:right-4">
+                  <div className="bg-gradient-to-r from-red-600 to-red-500 text-white p-3 lg:p-4 rounded-lg shadow-lg">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xl lg:text-2xl font-bold">{formatCurrency(pricing?.finalPrice ?? 0)}</span>
+                          {pricing && pricing.discountAmount > 0 && (
+                            <span className="text-xs lg:text-sm line-through opacity-75">{formatCurrency(pricing.basePrice)}</span>
+                          )}
+                        </div>
+                        {pricing && pricing.discountAmount > 0 && (
+                          <div className="text-xs lg:text-sm mt-1">-{Math.round((pricing.discountAmount / pricing.basePrice) * 100)}%</div>
+                        )}
+                      </div>
+                      
+                      {/* Countdown Timer */}
+                      <div className="bg-yellow-400 text-black px-2 py-1 lg:px-3 lg:py-2 rounded flex items-center gap-1 lg:gap-2 shadow-md">
+                        <span className="text-base lg:text-lg">⚡</span>
+                        <div className="text-xs font-bold">
+                          <div className="whitespace-nowrap">Ưu đãi giờ vàng</div>
+                          <div className="whitespace-nowrap">Kết thúc sau 1 ngày</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Floating Stats */}
-              <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white rounded-xl sm:rounded-2xl px-3 py-2 sm:px-6 sm:py-4 shadow-xl">
-                <p className="text-[#646667] text-xs sm:text-sm mb-1">Đã bán</p>
-                <p className="text-[#9F86D9] text-xl sm:text-2xl lg:text-3xl font-bold">342+</p>
+              {/* Promotional Badge */}
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 hover:bg-red-100 transition-colors cursor-pointer">
+                <span className="text-red-600 text-sm">🎫</span>
+                <span className="text-red-600 text-sm font-medium flex-1">Giảm 20k</span>
+                <button className="text-red-600 text-sm hover:translate-x-1 transition-transform">→</button>
+              </div>
+            </div>
+
+            {/* Right - Product Info */}
+            <div className="space-y-4 lg:space-y-5">
+              {/* Sale Badge */}
+              {pricing && pricing.discountAmount > 0 && (
+                <div className="inline-block bg-red-600 text-white text-xs lg:text-sm px-3 py-1 rounded shadow-sm">
+                  Sale sốc!!!
+                </div>
+              )}
+
+              {/* Product Title */}
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
+                {product.name}
+              </h1>
+
+              {/* Rating and Sales */}
+              <div className="flex items-center gap-3 lg:gap-4 flex-wrap bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-yellow-500 font-bold text-base lg:text-lg">4.8/5</span>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-yellow-400 text-sm lg:text-base">★</span>
+                    ))}
+                  </div>
+                  <span className="text-xs lg:text-sm text-gray-600">(1.2k)</span>
+                </div>
+                <div className="h-4 w-px bg-gray-300 hidden sm:block"></div>
+                <div className="text-xs lg:text-sm text-gray-700">
+                  Đã bán <span className="font-bold text-red-600">12k</span>
+                </div>
+                <div className="h-4 w-px bg-gray-300 hidden sm:block"></div>
+                <div className="text-red-600 text-xs lg:text-sm font-medium">
+                  🚀 Miễn phí vận chuyển
+                </div>
               </div>
 
-              <div className="hidden sm:block absolute top-1/2 -right-4 sm:-right-6 bg-white rounded-xl sm:rounded-2xl px-3 py-2 sm:px-6 sm:py-4 shadow-xl">
-                <p className="text-[#646667] text-sm mb-1">Đánh giá</p>
-                <p className="text-[#FCC605] text-3xl font-bold">4.9★</p>
+              {/* Top Product Badge */}
+              <div className="flex items-center gap-2 py-3 lg:py-4 border-y border-gray-200 bg-amber-50/50">
+                <span className="text-lg lg:text-xl">🏆</span>
+                <span className="text-xs lg:text-sm font-semibold text-gray-900">Sản phẩm hàng đầu</span>
+                <span className="text-xs lg:text-sm text-gray-600 truncate flex-1">- Đồ chơi giáo dục trẻ em...</span>
+                <button className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">→</button>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 lg:gap-3">
+                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                  <span className="text-base">📝</span>
+                  <span className="text-xs lg:text-sm font-medium text-gray-700">Thanh toán bảo mật</span>
+                </div>
+                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                  <span className="text-base">🔙</span>
+                  <span className="text-xs lg:text-sm font-medium text-gray-700">Hủy đơn dễ dàng</span>
+                </div>
+                <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
+                  <span className="text-base">🕐</span>
+                  <span className="text-xs lg:text-sm font-medium text-gray-700">Hỗ trợ 24/7</span>
+                </div>
+              </div>
+
+              {/* Variant Selection */}
+              {variantOptions.length > 1 && (
+                <div className="border-t border-gray-200 pt-4 lg:pt-5">
+                  <h3 className="text-sm lg:text-base font-semibold mb-3 text-gray-900">Chọn phiên bản:</h3>
+                  <div className="space-y-2">
+                    {variantOptions.map((variant) => {
+                      const variantPricing = resolveProductPricing(product, variant);
+                      const selected = isVariantSelected(variant);
+                      const outOfStock = variant.stockQuantity <= 0;
+
+                      return (
+                        <button
+                          key={variant.id ?? variant.name}
+                          onClick={() => !outOfStock && setSelectedVariant(variant)}
+                          disabled={outOfStock}
+                          className={`w-full p-3 lg:p-4 rounded-lg border-2 text-left transition-all ${
+                            outOfStock
+                              ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                              : selected
+                              ? 'border-[#9F86D9] bg-purple-50 shadow-md scale-105'
+                              : 'border-gray-200 bg-white hover:border-[#9F86D9] hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className={`text-sm lg:text-base font-semibold truncate ${
+                                  selected ? 'text-[#9F86D9]' : 'text-gray-900'
+                                }`}>
+                                  {variant.name}
+                                </p>
+                                {outOfStock && (
+                                  <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                                    Hết hàng
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs lg:text-sm text-gray-600">
+                                {variantPricing.discountAmount > 0 ? (
+                                  <>
+                                    <span className="line-through">{formatCurrency(variantPricing.basePrice)}</span>
+                                    <span className="text-red-600 font-medium">
+                                      Tiết kiệm {formatCurrency(variantPricing.discountAmount)}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span>Còn {variant.stockQuantity} sản phẩm</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className={`text-base lg:text-xl font-bold ${
+                                selected ? 'text-[#9F86D9]' : 'text-gray-900'
+                              }`}>
+                                {formatCurrency(variantPricing.finalPrice)}
+                              </p>
+                              {variantPricing.discountAmount > 0 && (
+                                <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded">
+                                  -{Math.round((variantPricing.discountAmount / variantPricing.basePrice) * 100)}%
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Shipping Information */}
+              <div className="border-t border-gray-200 pt-4 lg:pt-5 space-y-4">
+                <div className="flex items-start gap-3 bg-white rounded-lg border border-gray-200 p-3 lg:p-4">
+                  <span className="text-xl flex-shrink-0">💰</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm lg:text-base font-semibold mb-2">Hình thức thanh toán</div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="bg-green-100 text-green-700 text-xs lg:text-sm px-3 py-1.5 rounded-lg font-semibold shadow-sm">COD</span>
+                      <span className="text-xs lg:text-sm text-gray-600">Thanh toán bằng tiền mặt (COD)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 bg-white rounded-lg border border-gray-200 p-3 lg:p-4">
+                  <span className="text-xl flex-shrink-0">🚚</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                      <div className="text-sm lg:text-base font-semibold">Vận chuyển</div>
+                      <div className="text-sm lg:text-base flex items-center gap-2">
+                        <span className="line-through text-gray-400">32.000₫</span>
+                        <span className="text-red-600 font-bold text-base lg:text-lg">Free</span>
+                        <button className="text-gray-400 hover:text-gray-600 transition-colors">→</button>
+                      </div>
+                    </div>
+                    <div className="text-xs lg:text-sm text-gray-600 space-y-2">
+                      <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+                        <span className="text-base flex-shrink-0">💸</span>
+                        <span className="font-medium">Voucher giảm phí vận chuyển</span>
+                      </div>
+                      <div className="text-xs text-gray-500 leading-relaxed">
+                        Giảm 5000đ phí vận chuyển đối với các đơn hàng từ giá 250000₫ trở lên, giảm 25000₫ phí vận chuyển đối với các đơn hàng từ giá 80.000₫ trở lên
+                      </div>
+                      <div className="text-xs lg:text-sm text-gray-700 mt-3 pt-3 border-t border-gray-200">
+                        <div className="font-medium">📍 Từ Long Biên đến Nam Từ Liêm</div>
+                        <div className="text-gray-600 mt-1">Ngày giao hàng dự kiến: <span className="font-semibold">3 ngày</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-3 lg:p-4">
+                  <div className="text-sm lg:text-base font-semibold mb-2 text-gray-900">
+                    ✅ Chính sách đổi trả, Kiểm tra hàng trước khi thanh toán
+                  </div>
+                  <div className="text-xs lg:text-sm text-gray-700 leading-relaxed">
+                    Trả hàng trong vòng 7 ngày • Hủy đơn dễ dàng • Hoàn hàng miễn phí
+                  </div>
+                  <button 
+                    onClick={scrollToOrder}
+                    className="w-full sm:w-auto bg-[#9F86D9] text-white px-6 py-2.5 rounded-lg text-sm lg:text-base font-bold mt-3 hover:bg-[#8a75c4] shadow-md transition-all hover:scale-105"
+                  >
+                    Mua ngay
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          {/* Reviews Section */}
+          <div id="section-reviews" className="mt-8 border-t border-gray-200 pt-6 scroll-mt-20">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">Đánh giá của khách hàng (1245 bình luận)</h2>
+              <button className="text-[#9F86D9] text-sm font-medium hover:text-[#8a75c4] transition-colors">Xem thêm →</button>
+            </div>
+
+            {/* Average Rating */}
+            <div className="flex items-center gap-6 mb-6">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-gray-900">4.8/5</div>
+                <div className="flex justify-center my-2">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400 text-lg">★</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Individual Reviews */}
+            <div className="space-y-6">
+              {[
+                {
+                  name: 'Thanh Huyền',
+                  date: 'Mất hàng · Hồng',
+                  rating: 5,
+                  comment: 'Sách hình ảnh rõ nét, màu sắc phong phú làm bé nhà mình rất thích và hứng thú học hành',
+                  images: galleryImages.slice(0, 3),
+                },
+                {
+                  name: 'Ánh Nhi',
+                  date: 'Mất hàng · Hồng',
+                  rating: 5,
+                  comment: 'Với hệ thống hợp phần bộ trợ đi kèm vô cùng đầy đủ, phong phú đáp ứng đầy đủ cho nhu cầu học tập bao gồm Sách Mềm - phần mềm hó ..',
+                  images: galleryImages.slice(0, 2),
+                },
+                {
+                  name: 'Vân Dũng',
+                  date: '',
+                  rating: 5,
+                  comment: '',
+                  images: [],
+                },
+              ].map((review, i) => (
+                <div key={i} className="border-b border-gray-100 pb-6">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-lg">
+                      👤
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{review.name}</div>
+                      {review.date && <div className="text-xs text-gray-500">{review.date}</div>}
+                    </div>
+                  </div>
+                  <div className="flex mb-2">
+                    {[...Array(review.rating)].map((_, j) => (
+                      <span key={j} className="text-yellow-400 text-sm">★</span>
+                    ))}
+                  </div>
+                  {review.comment && (
+                    <p className="text-sm text-gray-700 mb-3">{review.comment}</p>
+                  )}
+                  {review.images.length > 0 && (
+                    <div className="flex gap-2">
+                      {review.images.map((img, j) => (
+                        <img
+                          key={j}
+                          src={img.src}
+                          alt={img.alt}
+                          className="w-20 h-20 object-cover rounded border border-gray-200"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Description/Introduction Section */}
+          <div id="section-description" className="mt-8 border-t border-gray-200 pt-6 scroll-mt-20">
+            <h2 className="text-xl font-bold mb-4">Giới thiệu về sản phẩm này</h2>
+            <div className="text-sm text-gray-700 space-y-3">
+              <p className="font-bold">Chi tiết</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>
+                  <strong>Combo Sách Tiên Tiểu Học</strong> là bộ tài liệu tuyệt với giúp trẻ em từ 4 đến 7 tuổi chuẩn bị tốt nhất cho hành trình học tập sắp tới. Bộ sách này bao gồm:
+                </li>
+                <li>
+                  <strong>Tập Đọc:</strong>
+                  <br />
+                  Nội dung: Các câu chuyện ngắn, hình ảnh sinh động và bài tập đọc để hiểu giúp trẻ phát triển kỹ năng đọc và tư duy.
+                </li>
+                <li>
+                  Lợi ích: Khuyến khích trẻ yêu thích việc đọc sách, mở rộng vốn từ vựng và cải thiện khả năng ngữ âm.
+                </li>
+                <li>
+                  <strong>Tập Viết:</strong>
+                  <br />
+                  Nội dung: Các bài tập viết chữ cái, từ vựng cơ bản đến câu đơn giản, đi kèm với hướng dẫn cụ thể.
+                </li>
+                <li>
+                  Lợi ích: Giúp trẻ rèn luyện kỹ năng viết tay, tăng cường sự tự tin khi khả năng diễn đạt ý tưởng.
+                </li>
+                <li>
+                  <strong>Tập Đếm Số:</strong>
+                  <br />
+                  Nội dung: Các bài tập đếm số từ 1 đến 100, bài toán đơn giản và các trò chơi thú vị liên quan đến số học.
+                </li>
+                <li>
+                  Lợi ích: Phát triển tư duy logic, khả năng tính toán và sự hiểu biết về các khái niệm cơ bản trong toán học.
+                </li>
+              </ul>
+              {galleryImages.length > 0 && (
+                <div className="mt-4">
+                  <img src={galleryImages[0]?.src} alt="Product detail" className="w-full rounded-lg" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recommendations Section */}
+          <div id="section-recommendations" className="mt-8 border-t border-gray-200 pt-6 scroll-mt-20">
+            <h2 className="text-xl font-bold mb-4">Sản phẩm đề xuất</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Các sản phẩm tương tự mà bạn có thể quan tâm
+            </p>
+            {/* Add recommendations content here if needed */}
+          </div>
+
+          {/* Order Form Section */}
+          <div id="order-section" className="mt-8 border-t border-gray-200 pt-6 scroll-mt-20">
+            <div className="lg:max-w-md mx-auto">
+              <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-bold mb-4">1. Combo gồm</h3>
+                <div className="space-y-2 mb-4 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold">•</span>
+                    <span>3 cuốn tập đọc, tập viết, tập tính toán</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold">•</span>
+                    <span>1 cuốn tô màu tặng kèm</span>
+                  </div>
+                </div>
+
+              <button className="w-full bg-white border-2 border-[#9F86D9] text-[#9F86D9] py-3 rounded-lg font-bold mb-4 hover:bg-purple-50 transition-colors text-sm sm:text-base">
+                Deal hời - Mua ngay!
+              </button>                <div className="mb-4 pb-4 border-b border-gray-200">
+                  <h4 className="font-bold mb-2 text-sm sm:text-base">{product.name}</h4>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs sm:text-sm text-gray-500">Giá gốc:</span>
+                    <span className="text-xs sm:text-sm line-through text-gray-400">{formatCurrency(pricing?.basePrice ?? 0)}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl sm:text-2xl font-bold text-red-600">{formatCurrency(pricing?.finalPrice ?? 0)}</span>
+                    {pricing && pricing.discountAmount > 0 && (
+                      <span className="bg-red-600 text-white text-xs sm:text-sm px-2 py-1 rounded font-bold">
+                        {Math.round((pricing.discountAmount / pricing.basePrice) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Countdown */}
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4 text-center border border-gray-200">
+                  <p className="text-xs sm:text-sm font-medium mb-3">Siêu sale chỉ diễn ra trong:</p>
+                  <div className="flex justify-center gap-2">
+                    {[
+                      { label: 'Ngày', value: '00' },
+                      { label: 'Giờ', value: String(timeLeft.hours).padStart(2, '0') },
+                      { label: 'Phút', value: String(timeLeft.minutes).padStart(2, '0') },
+                      { label: 'Giây', value: String(timeLeft.seconds).padStart(2, '0') },
+                    ].map((time, i) => (
+                      <div key={i} className="flex flex-col items-center">
+                        <div className="bg-gray-800 text-white text-lg sm:text-xl font-bold w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded">
+                          {time.value}
+                        </div>
+                        <span className="text-xs mt-1 text-gray-600">{time.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Form Fields */}
+                <div className="space-y-3 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Họ và Tên"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm focus:outline-none focus:border-[#9F86D9] focus:ring-1 focus:ring-[#9F86D9]"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Số điện thoại"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm focus:outline-none focus:border-[#9F86D9] focus:ring-1 focus:ring-[#9F86D9]"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Địa chỉ chi tiết (Số nhà, tên đường)"
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm focus:outline-none focus:border-[#9F86D9] focus:ring-1 focus:ring-[#9F86D9]"
+                  />
+                  <div className="grid grid-cols-3 gap-2">
+                    <select 
+                      value={selectedProvince || ''}
+                      onChange={handleProvinceChange}
+                      className="border border-gray-300 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm focus:outline-none focus:border-[#9F86D9] focus:ring-1 focus:ring-[#9F86D9] bg-white"
+                    >
+                      <option value="">Tỉnh/thành</option>
+                      {provinces.map((province) => (
+                        <option key={province.ProvinceID} value={province.ProvinceID}>
+                          {province.ProvinceName}
+                        </option>
+                      ))}
+                    </select>
+                    <select 
+                      value={selectedDistrict || ''}
+                      onChange={handleDistrictChange}
+                      disabled={!selectedProvince}
+                      className="border border-gray-300 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm focus:outline-none focus:border-[#9F86D9] focus:ring-1 focus:ring-[#9F86D9] bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Quận/huyện</option>
+                      {districts.map((district) => (
+                        <option key={district.DistrictID} value={district.DistrictID}>
+                          {district.DistrictName}
+                        </option>
+                      ))}
+                    </select>
+                    <select 
+                      value={selectedWard}
+                      onChange={handleWardChange}
+                      disabled={!selectedDistrict}
+                      className="border border-gray-300 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm focus:outline-none focus:border-[#9F86D9] focus:ring-1 focus:ring-[#9F86D9] bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Phường/xã</option>
+                      {wards.map((ward) => (
+                        <option key={ward.WardCode} value={ward.WardCode}>
+                          {ward.WardName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={currentStock === 0 || addingToCart}
+                    className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${
+                      currentStock === 0 || addingToCart
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-white border-2 border-[#9F86D9] text-[#9F86D9] hover:bg-purple-50'
+                    }`}
+                  >
+                    {addingToCart ? 'Đang thêm...' : currentStock === 0 ? 'Hết hàng' : 'Thêm vào Giỏ hàng'}
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    disabled={currentStock === 0 || addingToCart}
+                    className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${
+                      currentStock === 0 || addingToCart
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-[#9F86D9] text-white hover:bg-[#8a75c4] shadow-md'
+                    }`}
+                  >
+                    {currentStock === 0 ? 'Hết hàng' : 'Mua Ngay'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Problem Statement Section */}
-      <section className="py-8 sm:py-12 lg:py-20 bg-white">
-        <div className="max-w-[1434px] mx-auto px-4">
+      {/* Hide unnecessary sections for cleaner mobile-first design */}
+      <section className="hidden py-8 sm:py-12 lg:py-20 bg-gray-50">
+        <div className="max-w-[1200px] mx-auto px-4">
           <div className="text-center mb-6 sm:mb-10 lg:mb-16">
             <h2 className="text-xl sm:text-2xl lg:text-5xl font-bold text-[#1C1D1D] mb-3 sm:mb-4 lg:mb-6">
               Bạn Đang Gặp Những Vấn Đề Này?
@@ -613,7 +1138,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       </section>
 
       {/* Solution/Benefits Section */}
-      <section className="py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-[#F5F2FF] to-[#FFF9E5]">
+      <section className="hidden py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-[#F5F2FF] to-[#FFF9E5]">
         <div className="max-w-[1434px] mx-auto px-4">
           <div className="text-center mb-6 sm:mb-10 lg:mb-16">
             <h2 className="text-xl sm:text-2xl lg:text-5xl font-bold text-[#1C1D1D] mb-3 sm:mb-4 lg:mb-6 px-2 sm:px-4">
@@ -670,7 +1195,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       </section>
 
       {/* Before/After Transformation Section */}
-      <section className="py-8 sm:py-12 lg:py-20 bg-white">
+      <section className="hidden py-8 sm:py-12 lg:py-20 bg-white">
         <div className="max-w-[1434px] mx-auto px-4">
           <div className="text-center mb-6 sm:mb-10 lg:mb-16">
             <h2 className="text-xl sm:text-2xl lg:text-5xl font-bold text-[#1C1D1D] mb-3 sm:mb-4 lg:mb-6">
@@ -720,7 +1245,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       </section>
 
       {/* Social Proof - Customer Photos & Reviews */}
-      <section className="py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-[#FFF9E5] to-[#F5F2FF]">
+      <section className="hidden py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-[#FFF9E5] to-[#F5F2FF]">
         <div className="max-w-[1434px] mx-auto px-4">
           <div className="text-center mb-6 sm:mb-10 lg:mb-16">
             <h2 className="text-xl sm:text-2xl lg:text-5xl font-bold text-[#1C1D1D] mb-3 sm:mb-4 lg:mb-6">
@@ -814,8 +1339,8 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
         </div>
       </section>
 
-      {/* Order Section */}
-      <section id="order-section" className="py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-[#9F86D9] to-[#B79FE8]">
+      {/* Order Section - Hidden, using inline form instead */}
+      <section className="hidden py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-[#9F86D9] to-[#B79FE8]">
         <div className="max-w-[1200px] mx-auto px-4">
           <div className="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -1037,7 +1562,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-8 sm:py-12 lg:py-20 bg-white">
+      <section className="hidden py-8 sm:py-12 lg:py-20 bg-white">
         <div className="max-w-[1000px] mx-auto px-4">
           <div className="text-center mb-6 sm:mb-10 lg:mb-16">
             <h2 className="text-xl sm:text-2xl lg:text-5xl font-bold text-[#1C1D1D] mb-3 sm:mb-4 lg:mb-6">
@@ -1083,7 +1608,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-[#E35946] via-[#F25E17] to-[#EDA62A] text-white relative overflow-hidden">
+      <section className="hidden py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-[#E35946] via-[#F25E17] to-[#EDA62A] text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 sm:top-20 sm:left-20 w-20 h-20 sm:w-40 sm:h-40 bg-white rounded-full animate-pulse"></div>
           <div className="absolute bottom-10 right-10 sm:bottom-20 sm:right-20 w-32 h-32 sm:w-60 sm:h-60 bg-white rounded-full animate-bounce"></div>
@@ -1149,7 +1674,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
       </section>
 
       {/* Trust Footer */}
-      <section className="py-12 bg-[#1C1D1D] text-white">
+      <section className="hidden py-12 bg-[#1C1D1D] text-white">
         <div className="max-w-[1434px] mx-auto px-4">
           <div className="grid grid-cols-4 gap-8 text-center">
             {[
