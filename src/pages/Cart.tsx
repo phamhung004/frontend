@@ -520,56 +520,7 @@ const Cart = () => {
             </div>
 
             {/* Shipping Calculation */}
-            <div className="border border-[#DBE2E5] rounded p-4 sm:p-6 lg:p-7 space-y-4 sm:space-y-6">
-              <h3 className="text-sm sm:text-base font-bold text-[#1C1D1D]">{t('cart.calculateShipping')}</h3>
-              
-              {/* Country Select */}
-              <div className="relative">
-                <select
-                  value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                  className="w-full h-11 px-4 sm:px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] appearance-none focus:outline-none focus:border-[#9F86D9] bg-white"
-                >
-                  <option value="USA">USA</option>
-                  <option value="UK">United Kingdom</option>
-                  <option value="FR">France</option>
-                  <option value="DE">Germany</option>
-                </select>
-                <svg
-                  className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#1C1D1D] pointer-events-none"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-
-              {/* State / Country */}
-              <input
-                type="text"
-                placeholder={t('cart.stateCountry')}
-                className="w-full sm:w-[248px] h-11 px-4 sm:px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] focus:outline-none focus:border-[#9F86D9]"
-              />
-
-              {/* PostCode */}
-              <input
-                type="text"
-                placeholder={t('cart.postCode')}
-                className="w-full sm:w-[248px] h-11 px-4 sm:px-5 border border-[#DBE2E5] rounded text-sm text-[#1C1D1D] focus:outline-none focus:border-[#9F86D9]"
-              />
-
-              {shippingCalculated && (
-                <p className="text-sm text-[#1C1D1D]">{t('cart.flatRate')}</p>
-              )}
-
-              <button
-                onClick={() => setShippingCalculated(true)}
-                className="text-sm text-[#1C1D1D] hover:text-[#9F86D9] underline"
-              >
-                {t('cart.calculateShippingBtn')}
-              </button>
-            </div>
+            
           </div>
 
           {/* Right Side - Checkout Summary */}
@@ -602,10 +553,10 @@ const Cart = () => {
               <div className="border-t border-[#DBE2E5]" />
 
               {/* Estimate */}
-              <div className="flex items-center justify-between py-2">
+              {/* <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-[#1C1D1D]">{t('cart.estimateFor')}</span>
                 <span className="text-base font-bold text-[#1C1D1D]">United Kingdom</span>
-              </div>
+              </div> */}
               <div className="border-t border-[#DBE2E5]" />
 
               {/* Total */}
