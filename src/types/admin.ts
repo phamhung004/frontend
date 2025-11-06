@@ -22,6 +22,18 @@ export interface TopProduct {
   thumbnailUrl: string | null;
 }
 
+export interface OrderStatusCount {
+  status: string;
+  count: number;
+}
+
+export interface CategoryDistribution {
+  categoryName: string;
+  totalRevenue: number;
+  productCount: number;
+  percentage: number;
+}
+
 export interface AdminStatsOverview {
   totalCustomers: number;
   customersGrowthPercentage: number;
@@ -35,4 +47,6 @@ export interface AdminStatsOverview {
   monthlySales: MonthlySalesData[];
   revenueByLocation: RevenueByLocation[];
   topProducts: TopProduct[];
+  orderStatusCounts?: OrderStatusCount[];
+  categoryDistribution?: CategoryDistribution[];
 }

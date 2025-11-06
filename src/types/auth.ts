@@ -5,7 +5,10 @@ export interface User {
   firstName?: string;
   lastName?: string;
   fullName?: string;
+  phone?: string;
   avatarUrl?: string;
+  dateOfBirth?: string;
+  gender?: 'male' | 'female' | 'other';
   createdAt?: string;
 }
 

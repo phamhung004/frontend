@@ -25,6 +25,7 @@ import Notifications from './pages/account/Notifications';
 import Profile from './pages/account/Profile';
 import Address from './pages/Address';
 import Orders from './pages/account/Orders';
+import AccountOrderDetail from './pages/account/OrderDetail';
 import NotificationDemo from './pages/NotificationDemo';
 import Wishlist from './pages/Wishlist';
 
@@ -105,6 +106,14 @@ function App() {
                       <Route path="address" element={<Address />} />
                       <Route path="orders" element={<Orders />} />
                     </Route>
+                    <Route 
+                      path="/account/orders/:orderId" 
+                      element={
+                        <ProtectedRoute>
+                          <AccountOrderDetail />
+                        </ProtectedRoute>
+                      } 
+                    />
                   </Routes>
                 </main>
                 <Footer />

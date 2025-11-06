@@ -1,10 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 
 const AccountSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   const menuItems = [
     {
@@ -59,14 +61,26 @@ const AccountSidebar = () => {
       {/* User Info */}
       <div className="p-6 bg-gradient-to-br from-[#9F86D9] to-[#B69EE6] text-white">
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-[#9F86D9]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center overflow-hidden">
+            {user?.avatarUrl ? (
+              <img 
+                src={user.avatarUrl} 
+                alt={user.fullName || 'Avatar'} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <svg className="w-8 h-8 text-[#9F86D9]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            )}
           </div>
-          <div>
-            <h3 className="font-bold text-base" style={{ fontFamily: 'DM Sans' }}>Hungg</h3>
-            <p className="text-sm opacity-90" style={{ fontFamily: 'DM Sans' }}>hunggphamm908</p>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-base truncate" style={{ fontFamily: 'DM Sans' }}>
+              {user?.fullName || user?.firstName || 'User'}
+            </h3>
+            <p className="text-sm opacity-90 truncate" style={{ fontFamily: 'DM Sans' }}>
+              {user?.email || ''}
+            </p>
           </div>
         </div>
       </div>

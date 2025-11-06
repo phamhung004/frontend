@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import orderService, { type CheckoutResponsePayload } from '../../services/orderService';
@@ -255,12 +256,13 @@ const Orders = () => {
                           {t('orders.buyAgain')}
                         </button>
                       )}
-                      <button
-                        className="px-4 py-2 bg-[#9F86D9] text-white rounded-lg hover:bg-[#8B74C5] transition-colors text-sm font-medium"
+                      <Link
+                        to={`/account/orders/${order.orderNumber}`}
+                        className="px-4 py-2 bg-[#9F86D9] text-white rounded-lg hover:bg-[#8B74C5] transition-colors text-sm font-medium inline-block"
                         style={{ fontFamily: 'DM Sans' }}
                       >
                         {t('orders.viewDetail')}
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>

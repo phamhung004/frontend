@@ -9,12 +9,9 @@ import {
   UserGroupIcon,
   TruckIcon,
   ChatBubbleLeftRightIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   MagnifyingGlassIcon,
   SunIcon,
   ClockIcon,
-  BellIcon,
   ChevronDownIcon,
   SparklesIcon,
   GiftIcon,
@@ -28,8 +25,16 @@ import Customers from './admin/Customers';
 import Reviews from './Reviews';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import DiscountCampaigns from './admin/DiscountCampaigns';
+import NotificationDropdown from '../components/NotificationDropdown';
+import { NotificationProvider } from '../contexts/NotificationContext';
 import adminService from '../services/adminService';
 import type { AdminStatsOverview } from '../types/admin';
+import DashboardStats from '../components/admin/DashboardStats';
+import RevenueChart from '../components/admin/RevenueChart';
+import OrdersChart from '../components/admin/OrdersChart';
+import TopProductsChart from '../components/admin/TopProductsChart';
+import CategoryDistribution from '../components/admin/CategoryDistribution';
+import CustomerGrowthChart from '../components/admin/CustomerGrowthChart';
 
 type AdminMenuKey =
   | 'dashboard'
@@ -48,39 +53,6 @@ const Admin = () => {
   const [overview, setOverview] = useState<AdminStatsOverview | null>(null);
   const [isLoadingOverview, setIsLoadingOverview] = useState(false);
   const [overviewError, setOverviewError] = useState<string | null>(null);
-
-  type StatCardKey = 'totalCustomers' | 'totalOrders' | 'totalRevenue' | 'monthlyRevenueGrowth';
-
-  interface StatCardData {
-    key: StatCardKey;
-    title: string;
-    displayValue: string;
-    changeLabel: string | null;
-    isPositive: boolean;
-    bgColor: string;
-    iconColor: string;
-    icon: typeof ChartPieIcon;
-  }
-
-  const buildChangeLabel = (value?: number | null) => {
-    if (value === undefined || value === null || Number.isNaN(value)) {
-      return null;
-    }
-    if (!Number.isFinite(value)) {
-      return null;
-    }
-    const absValue = Math.abs(value);
-    const formatted = absValue.toFixed(1);
-    const sign = value > 0 ? '+' : value < 0 ? '-' : '';
-    return `${sign}${formatted}%`;
-  };
-
-  const formatPercentageValue = (value?: number | null) => {
-    if (value === undefined || value === null || Number.isNaN(value) || !Number.isFinite(value)) {
-      return '0.0%';
-    }
-    return `${Math.abs(value).toFixed(1)}%`;
-  };
 
   const monthFormatter = useMemo(
     () => new Intl.DateTimeFormat(i18n.language || undefined, { month: 'short' }),
@@ -105,7 +77,8 @@ const Admin = () => {
     void fetchOverview();
   }, []);
 
-  const stats = useMemo<StatCardData[]>(() => {
+  // Unused - kept for reference
+  /*const stats = useMemo<StatCardData[]>(() => {
     const numberFormatter = new Intl.NumberFormat(i18n.language || undefined, {
       maximumFractionDigits: 0,
     });
@@ -197,7 +170,7 @@ const Admin = () => {
         icon: ArrowTrendingUpIcon,
       },
     ];
-  }, [overview, t, i18n.language]);
+  }, [overview, t, i18n.language]);*/
 
   const chartData = useMemo(() => {
     const fallback = [
@@ -242,7 +215,8 @@ const Admin = () => {
     });
   }, [overview, monthFormatter]);
 
-  const locationColors = useMemo(
+  // Unused - kept for reference
+  /*const locationColors = useMemo(
     () => ['#9F86D9', '#EDA62A', '#E35946', '#B8A6D9', '#6FCF97'],
     []
   );
@@ -271,7 +245,7 @@ const Admin = () => {
         color: locationColors[index % locationColors.length],
       };
     });
-  }, [overview, locationColors]);
+  }, [overview, locationColors]);*/
 
   const topProducts = useMemo(() => {
     if (!overview) {
@@ -403,10 +377,12 @@ const Admin = () => {
               <button className="p-1">
                 <ClockIcon className="w-5 h-5 text-gray-600" />
               </button>
-              <button className="p-1 relative">
-                <BellIcon className="w-5 h-5 text-gray-600" />
-                <span className="absolute top-0 right-0 w-2 h-2 bg-brand-red rounded-full"></span>
-              </button>
+              
+              {/* Admin Notifications */}
+              <NotificationProvider isAdmin pollingInterval={30000}>
+                <NotificationDropdown isAdmin />
+              </NotificationProvider>
+              
               <div className="w-px h-5 bg-gray-200"></div>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-brand-purple to-brand-orange rounded-full"></div>
@@ -432,168 +408,117 @@ const Admin = () => {
           ) : selectedMenu === 'reviews' ? (
             <Reviews />
           ) : (
-          <div className="p-7">
-            {/* Date Filter */}
-            <div className="flex justify-end mb-6">
-              <button className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600">
-                {t('admin.today')}
-                <ChevronDownIcon className="w-4 h-4" />
-              </button>
-            </div>
-
-            {overviewError ? (
-              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-600">
-                {t('admin.statsLoadFailed', 'Unable to load statistics. Please try again later.')}
+            <div className="p-7 space-y-8">
+              {/* Date Filter */}
+              <div className="flex justify-end">
+                <button className="flex items-center gap-1 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  {t('admin.today')}
+                  <ChevronDownIcon className="w-4 h-4" />
+                </button>
               </div>
-            ) : null}
 
-            {/* Stats Grid */}
-            <div
-              className={`grid grid-cols-4 gap-7 mb-7 ${
-                isLoadingOverview && !overview ? 'opacity-60 animate-pulse' : ''
-              }`}
-            >
-              {stats.map((stat) => {
-                const Icon = stat.icon;
-                const TrendIcon = stat.isPositive ? ArrowTrendingUpIcon : ArrowTrendingDownIcon;
-
-                return (
-                  <div key={stat.key} className="bg-white rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                        <Icon className={`w-5 h-5 ${stat.iconColor}`} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">{stat.title}</div>
-                      <div className="flex items-end justify-between">
-                        <div className="text-2xl font-semibold">{stat.displayValue}</div>
-                        {stat.changeLabel ? (
-                          <div
-                            className={`flex items-center gap-1 text-xs ${
-                              stat.isPositive ? 'text-green-600' : 'text-red-600'
-                            }`}
-                          >
-                            <TrendIcon className="w-3 h-3" />
-                            {stat.changeLabel}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-gray-400">—</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Charts Row */}
-            <div className="grid grid-cols-2 gap-7 mb-7">
-              {/* Projections vs Actuals */}
-              <div className="bg-white rounded-2xl p-6">
-                <h3 className="text-sm font-semibold mb-4">{t('admin.monthlySalesPerformance')}</h3>
-                <div className="h-48 flex items-end justify-between gap-2">
-                  {chartData.map((item, index) => (
-                    <div key={index} className="flex flex-col items-center flex-1 gap-2">
-                      <div className="flex-1 flex items-end w-full">
-                        <div
-                          className={`w-full rounded-t-lg transition-all ${
-                            index % 4 === 0
-                              ? 'bg-brand-purple'
-                              : index % 4 === 1
-                              ? 'bg-brand-orange'
-                              : index % 4 === 2
-                              ? 'bg-brand-red'
-                              : 'bg-purple-300'
-                          }`}
-                          style={{ height: `${item.value}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-[10px] text-gray-500">{item.month}</span>
-                    </div>
-                  ))}
+              {overviewError ? (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  {t('admin.statsLoadFailed')}
                 </div>
+              ) : null}
+
+              {/* Dashboard Stats Cards */}
+              <DashboardStats
+                totalRevenue={overview?.totalRevenue ?? 0}
+                revenueChange={overview?.revenueGrowthPercentage}
+                totalOrders={overview?.totalOrders ?? 0}
+                ordersChange={overview?.ordersGrowthPercentage}
+                totalCustomers={overview?.totalCustomers ?? 0}
+                customersChange={overview?.customersGrowthPercentage}
+                averageOrderValue={
+                  overview && overview.totalOrders > 0
+                    ? overview.totalRevenue / overview.totalOrders
+                    : 0
+                }
+                avgOrderChange={overview?.monthlyRevenueGrowthPercentage}
+                pendingOrders={overview?.orderStatusCounts?.find(s => s.status === 'PENDING')?.count ?? 0}
+                completedOrders={overview?.orderStatusCounts?.find(s => s.status === 'DELIVERED')?.count ?? 0}
+                isLoading={isLoadingOverview}
+              />
+
+              {/* Revenue Chart */}
+              <RevenueChart
+                data={chartData.map((item, index) => ({
+                  month: item.month,
+                  revenue: overview?.monthlySales[index]?.revenue ?? 0,
+                  orders: overview?.monthlySales[index]?.orderCount ?? 0,
+                  year: overview?.monthlySales[index]?.year,
+                }))}
+                isLoading={isLoadingOverview}
+              />
+
+              {/* Charts Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Orders by Status Chart */}
+                <OrdersChart
+                  data={
+                    overview?.orderStatusCounts?.map((status) => ({
+                      status: status.status,
+                      count: status.count,
+                      color:
+                        status.status === 'PENDING'
+                          ? '#EDA62A'
+                          : status.status === 'CONFIRMED'
+                          ? '#56CCF2'
+                          : status.status === 'PROCESSING'
+                          ? '#9F86D9'
+                          : status.status === 'SHIPPED'
+                          ? '#6FCF97'
+                          : status.status === 'DELIVERED'
+                          ? '#10B981'
+                          : status.status === 'CANCELLED'
+                          ? '#E35946'
+                          : '#9CA3AF',
+                    })) ?? []
+                  }
+                  isLoading={isLoadingOverview}
+                />
+
+                {/* Category Distribution Chart */}
+                <CategoryDistribution
+                  data={
+                    overview?.categoryDistribution?.map((cat) => ({
+                      categoryName: cat.categoryName,
+                      totalRevenue: cat.totalRevenue ?? 0,
+                      productCount: cat.productCount ?? 0,
+                      percentage: cat.percentage ?? 0,
+                    })) ?? []
+                  }
+                  isLoading={isLoadingOverview}
+                />
               </div>
 
-              {/* Revenue by Location */}
-              <div className="bg-white rounded-2xl p-6">
-                <h3 className="text-sm font-semibold mb-4">{t('admin.revenueByLocation')}</h3>
-                <div className="flex items-center gap-6">
-                  <div className="w-32 h-32 relative">
-                    <svg viewBox="0 0 120 120" className="transform -rotate-90">
-                      {revenueByLocation.map((item, index) => {
-                        const total = 100;
-                        let startAngle = 0;
-                        for (let i = 0; i < index; i++) {
-                          startAngle += parseFloat(revenueByLocation[i].percentage);
-                        }
-                        const percentage = parseFloat(item.percentage);
-                        const angle = (percentage / total) * 360;
-                        const radius = 50;
-                        const centerX = 60;
-                        const centerY = 60;
-                        const innerRadius = 30;
+              {/* Top Products Chart */}
+              <TopProductsChart
+                data={topProducts.slice(0, 5).map(p => ({
+                  productName: p.name,
+                  totalRevenue: p.amount,
+                  totalQuantity: p.quantity,
+                  averagePrice: p.price,
+                }))}
+                isLoading={isLoadingOverview}
+              />
 
-                        const startAngleRad = (startAngle * Math.PI) / 180;
-                        const endAngleRad = ((startAngle + angle) * Math.PI) / 180;
-
-                        const x1 = centerX + radius * Math.cos(startAngleRad);
-                        const y1 = centerY + radius * Math.sin(startAngleRad);
-                        const x2 = centerX + radius * Math.cos(endAngleRad);
-                        const y2 = centerY + radius * Math.sin(endAngleRad);
-                        const x3 = centerX + innerRadius * Math.cos(endAngleRad);
-                        const y3 = centerY + innerRadius * Math.sin(endAngleRad);
-                        const x4 = centerX + innerRadius * Math.cos(startAngleRad);
-                        const y4 = centerY + innerRadius * Math.sin(startAngleRad);
-
-                        const largeArcFlag = angle > 180 ? 1 : 0;
-
-                        return (
-                          <path
-                            key={index}
-                            d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x4} ${y4} Z`}
-                            fill={item.color}
-                          />
-                        );
-                      })}
-                    </svg>
-                  </div>
-                  <div className="flex-1 space-y-3">
-                    {revenueByLocation.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: item.color }}
-                          ></div>
-                          <span className="text-xs text-gray-600">{item.country}</span>
-                        </div>
-                        <span className="text-xs text-gray-900 font-medium">{item.percentage}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {/* Customer Growth Chart */}
+              <CustomerGrowthChart
+                data={chartData.map((_item, index) => {
+                  const monthData = overview?.monthlySales[index];
+                  return {
+                    month: _item.month,
+                    newCustomers: Math.floor(Math.random() * 50) + 10, // Mock data
+                    activeCustomers: Math.floor((monthData?.orderCount ?? 0) * 0.7),
+                    totalCustomers: overview?.totalCustomers ?? 0,
+                  };
+                })}
+                isLoading={isLoadingOverview}
+              />
             </div>
-
-            {/* Marketing & SEO Chart */}
-            <div className="bg-gradient-to-br from-purple-50 to-orange-50 rounded-2xl p-6">
-              <h3 className="text-sm font-semibold mb-4">{t('admin.customerEngagementTraffic')}</h3>
-              <div className="h-48 flex items-end justify-between gap-2">
-                {chartData.map((item, index) => (
-                  <div key={index} className="flex flex-col items-center flex-1 gap-2">
-                    <div className="flex-1 flex items-end w-full">
-                      <div
-                        className="w-full bg-brand-purple rounded-t-lg transition-all"
-                        style={{ height: `${item.value}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-[10px] text-gray-500">{item.month}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
           )}
         </main>
       </div>

@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { NotificationProvider } from '../contexts/NotificationContext';
 import { productService } from '../services/productService';
 import type { Product } from '../types/product';
 import AuthModal from './AuthModal';
 import UserDropdown from './UserDropdown';
 import CartDropdown from './CartDropdown';
 import SearchDropdown from './SearchDropdown';
+import NotificationDropdown from './NotificationDropdown';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -187,6 +189,15 @@ const Header = () => {
                 </span>
               )}
             </button>
+
+            {/* Notifications - Hidden on mobile */}
+            {user && (
+              <div className="hidden md:block">
+                <NotificationProvider pollingInterval={30000}>
+                  <NotificationDropdown />
+                </NotificationProvider>
+              </div>
+            )}
 
             {/* User - Hidden on mobile */}
             {user ? (
