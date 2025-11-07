@@ -36,6 +36,11 @@ const createVariantClientId = () =>
     ? globalThis.crypto.randomUUID()
     : `variant-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+const createMediaClientId = () =>
+  typeof globalThis.crypto !== 'undefined' && typeof globalThis.crypto.randomUUID === 'function'
+    ? `media-${globalThis.crypto.randomUUID()}`
+    : `media-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
 const normalizeMediaList = (media: ProductFormMedia[]): ProductFormMedia[] => {
   const sorted = [...media]
     .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
@@ -78,6 +83,7 @@ const upsertVariantMedia = (
 
   const hasPrimary = updated.some((item) => item.isPrimary);
   updated.push({
+    clientId: key,
     imageUrl: trimmedUrl,
     altText: trimmedName,
     displayOrder: updated.length + 1,
@@ -583,6 +589,140 @@ const Products = () => {
     });
   };
 
+  const handleMediaFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const fileList = event.target.files;
+    if (!fileList || fileList.length === 0) {
+      return;
+    }
+
+    const slug = deriveSlug();
+    const files = Array.from(fileList).map((file) => ({
+      file,
+      clientId: createMediaClientId(),
+      tempUrl: URL.createObjectURL(file),
+    }));
+
+    files.forEach(({ tempUrl }) => {
+      registerObjectUrl(tempUrl);
+    });
+
+    setFormData((prev) => {
+      let media = [...prev.media];
+      files.forEach(({ clientId, tempUrl }) => {
+        const hasPrimary = media.some((item) => item.isPrimary);
+        media.push({
+          clientId,
+          imageUrl: '',
+          altText: '',
+          displayOrder: media.length + 1,
+          isPrimary: hasPrimary ? false : media.length === 0,
+          previewUrl: tempUrl,
+          isUploading: true,
+        });
+      });
+      media = normalizeMediaList(media);
+      return { ...prev, media };
+    });
+
+    files.forEach(({ file, clientId, tempUrl }) => {
+      uploadProductAsset(file, {
+        slug,
+        folder: `products/${slug}/gallery`,
+      })
+        .then(({ publicUrl }) => {
+          let shouldNotify = false;
+          setFormData((prev) => {
+            const exists = prev.media.some((item) => item.clientId === clientId);
+            if (!exists) {
+              return prev;
+            }
+            const media = prev.media.map((item) => {
+              if (item.clientId !== clientId) {
+                return item;
+              }
+              if (item.previewUrl && item.previewUrl.startsWith('blob:')) {
+                revokeObjectUrl(item.previewUrl);
+              }
+              return {
+                ...item,
+                imageUrl: publicUrl,
+                previewUrl: publicUrl,
+                isUploading: false,
+              };
+            });
+            shouldNotify = true;
+            return { ...prev, media: normalizeMediaList(media) };
+          });
+          if (shouldNotify) {
+            toast.success(
+              t('admin.success') ?? 'Success',
+              t('admin.imageUploadSuccess') ?? 'Image uploaded successfully.'
+            );
+          }
+        })
+        .catch((error) => {
+          console.error('Product media upload failed', error);
+          let shouldNotify = false;
+          setFormData((prev) => {
+            const target = prev.media.find((item) => item.clientId === clientId);
+            if (!target) {
+              return prev;
+            }
+            if (target.previewUrl && target.previewUrl.startsWith('blob:')) {
+              revokeObjectUrl(target.previewUrl);
+            }
+            const filtered = prev.media.filter((item) => item.clientId !== clientId);
+            shouldNotify = true;
+            return { ...prev, media: normalizeMediaList(filtered) };
+          });
+          if (shouldNotify) {
+            toast.error(
+              t('admin.error') ?? 'Error',
+              t('admin.imageUploadFailed') ?? 'Unable to upload image.'
+            );
+          }
+        })
+        .finally(() => {
+          revokeObjectUrl(tempUrl);
+        });
+    });
+
+    event.target.value = '';
+  };
+
+  const setPrimaryMediaItem = (clientId: string) => {
+    setFormData((prev) => {
+      if (!prev.media.some((item) => item.clientId === clientId)) {
+        return prev;
+      }
+      const media = prev.media.map((item) => ({
+        ...item,
+        isPrimary: item.clientId === clientId,
+      }));
+      return { ...prev, media };
+    });
+  };
+
+  const updateMediaAltText = (clientId: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      media: prev.media.map((item) =>
+        item.clientId === clientId ? { ...item, altText: value } : item
+      ),
+    }));
+  };
+
+  const removeMediaItem = (clientId: string) => {
+    setFormData((prev) => {
+      const target = prev.media.find((item) => item.clientId === clientId);
+      if (target?.previewUrl && target.previewUrl.startsWith('blob:')) {
+        revokeObjectUrl(target.previewUrl);
+      }
+      const filtered = prev.media.filter((item) => item.clientId !== clientId);
+      return { ...prev, media: normalizeMediaList(filtered) };
+    });
+  };
+
   const openCreate = () => {
     resetForm();
     setIsFormOpen(true);
@@ -627,7 +767,9 @@ const Products = () => {
           const trimmedUrl = item.imageUrl;
           const queue = trimmedUrl ? imageToClientIds.get(trimmedUrl) : undefined;
           const sourceVariantKey = queue && queue.length > 0 ? queue.shift() : undefined;
+          const clientId = sourceVariantKey ?? (item.id ? `media-${item.id}` : createMediaClientId());
           return {
+            clientId,
             id: item.id,
             imageUrl: trimmedUrl,
             altText: item.altText ?? '',
@@ -1370,6 +1512,123 @@ const Products = () => {
                   <p className="pl-7 text-xs text-gray-500">
                     {t('admin.enableLandingPageHelper') ?? 'Khi bật, trang chi tiết sẽ hiển thị giao diện landing page tùy chỉnh.'}
                   </p>
+                </section>
+
+                {/* Product Media */}
+                <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <div className="flex flex-col gap-3 mb-6 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
+                        <PhotoIcon className="h-5 w-5 text-orange-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-bold text-gray-800">
+                          {t('admin.productGallery') ?? 'Product Gallery'}
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          {t('admin.productGalleryHelper') ?? 'Upload multiple images to showcase this product.'}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <input
+                        id="product-gallery-upload"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleMediaFileChange}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="product-gallery-upload"
+                        className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-brand-purple bg-white px-4 py-2.5 text-sm font-medium text-brand-purple transition hover:bg-brand-purple hover:text-white shadow-sm"
+                      >
+                        {t('admin.addImages') ?? 'Add images'}
+                      </label>
+                    </div>
+                  </div>
+
+                  {formData.media.length === 0 ? (
+                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/70 p-10 text-center text-sm text-gray-500">
+                      {t('admin.noProductImages') ?? 'No gallery images yet. Click "Add images" to begin.'}
+                    </div>
+                  ) : (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {formData.media.map((mediaItem, index) => {
+                        const previewSrc = mediaItem.previewUrl || mediaItem.imageUrl || placeholderImage;
+                        const clientId = mediaItem.clientId ?? mediaItem.sourceVariantKey ?? `media-${index}`;
+                        return (
+                          <div
+                            key={clientId}
+                            className="flex h-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                          >
+                            <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+                              <img
+                                src={previewSrc}
+                                alt={mediaItem.altText || formData.name || 'product-media'}
+                                className="h-full w-full object-cover"
+                              />
+                              <div className="absolute bottom-2 left-2">
+                                <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700">
+                                  #{mediaItem.displayOrder}
+                                </span>
+                              </div>
+                              {mediaItem.isPrimary ? (
+                                <span className="absolute top-2 left-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                                  {t('admin.primaryImage') ?? 'Primary'}
+                                </span>
+                              ) : null}
+                              {mediaItem.isUploading ? (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white">
+                                  <ArrowPathIcon className="h-6 w-6 animate-spin" />
+                                  <span className="mt-1 text-xs font-semibold">
+                                    {t('common.uploading') ?? 'Uploading...'}
+                                  </span>
+                                </div>
+                              ) : null}
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setPrimaryMediaItem(clientId)}
+                                className="rounded-lg border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 transition hover:border-brand-purple hover:text-brand-purple disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={mediaItem.isPrimary || mediaItem.isUploading}
+                              >
+                                {mediaItem.isPrimary
+                                  ? t('admin.primaryImage') ?? 'Primary'
+                                  : t('admin.setPrimary') ?? 'Set primary'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeMediaItem(clientId)}
+                                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={mediaItem.isUploading}
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                                {t('admin.removeImage')}
+                              </button>
+                            </div>
+                            <label className="grid gap-1">
+                              <span className="text-xs font-medium text-gray-600">
+                                {t('admin.altText') ?? 'Alt text'}
+                              </span>
+                              <input
+                                value={mediaItem.altText}
+                                onChange={(event) => updateMediaAltText(clientId, event.target.value)}
+                                className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20"
+                                placeholder={t('admin.altTextPlaceholder') ?? 'Describe this image'}
+                              />
+                            </label>
+                            {mediaItem.imageUrl ? (
+                              <p className="line-clamp-2 break-all rounded bg-gray-100 p-2 text-[11px] text-gray-500">
+                                {mediaItem.imageUrl}
+                              </p>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </section>
 
                 {/* PDF Product Fields */}

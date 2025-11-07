@@ -947,7 +947,7 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
               {/* Product Images */}
               {galleryImages.length > 0 && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {galleryImages.slice(0, 4).map((image, index) => (
+                  {galleryImages.slice(0, 6).map((image, index) => (
                     <img 
                       key={index} 
                       src={image.src} 

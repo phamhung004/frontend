@@ -92,6 +92,7 @@ export interface ProductRequest {
 }
 
 export interface ProductFormMedia {
+  clientId?: string;
   id?: number;
   imageUrl: string;
   altText: string;
