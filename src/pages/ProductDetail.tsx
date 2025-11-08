@@ -6,6 +6,7 @@ import RecentlyViewed from '../components/shop/RecentlyViewed';
 import InstagramFeed from '../components/InstagramFeed';
 import { productService } from '../services/productService';
 import reviewService from '../services/reviewService';
+import productTrackingService from '../services/productTrackingService';
 import type { Product, ProductDetail, ProductVariant } from '../types/product';
 import type { ReviewStats } from '../types/review';
 import { useCart } from '../contexts/CartContext';
@@ -71,6 +72,19 @@ const ProductDetail = () => {
 
     fetchProduct();
   }, [id, navigate]);
+
+  // Track product view and time spent
+  useEffect(() => {
+    if (!product) return;
+
+    // Track view
+    productTrackingService.trackView(product.id, selectedVariant?.id);
+
+    // Track time spent
+    const cleanup = productTrackingService.createTimeTracker(product.id, selectedVariant?.id);
+
+    return cleanup;
+  }, [product, selectedVariant?.id]);
 
   const galleryImages = useMemo(() => {
     if (!product) return [];
@@ -314,6 +328,12 @@ const ProductDetail = () => {
         quantity: toAdd,
       });
 
+      // Track add to cart event
+      productTrackingService.trackAddToCart(product.id, selectedVariant?.id, {
+        quantity: toAdd,
+        price: pricing?.finalPrice,
+      });
+
       toast.success(
         'Đã thêm vào giỏ hàng!',
         `${toAdd} x ${product.name}${selectedVariant ? ' - ' + selectedVariant.name : ''}`
@@ -461,7 +481,15 @@ const ProductDetail = () => {
               {galleryImages.map((img) => (
                 <div
                   key={img.src}
-                  onClick={() => setMainImage(img.src)}
+                  onClick={() => {
+                    setMainImage(img.src);
+                    if (product) {
+                      productTrackingService.trackClick(product.id, selectedVariant?.id, {
+                        clickTarget: 'thumbnail_image',
+                        imageUrl: img.src,
+                      });
+                    }
+                  }}
                   className={`w-16 h-20 sm:w-20 md:w-[100px] sm:h-24 md:h-[120px] bg-[#EFF2F3] cursor-pointer border-2 flex-shrink-0 ${
                     mainImage === img.src ? 'border-[#9F86D9]' : 'border-transparent'
                   }`}
@@ -597,6 +625,10 @@ const ProductDetail = () => {
                         onClick={() => {
                           setSelectedVariant(variant);
                           setMainImage(variant.imageUrl ?? (galleryImages[0]?.src ?? product.thumbnailUrl ?? placeholderImage));
+                          productTrackingService.trackClick(product.id, variant.id, {
+                            clickTarget: 'variant_selection',
+                            variantName: variant.name,
+                          });
                         }}
                         className={`relative flex flex-col items-center p-2 rounded border-2 transition-all hover:border-[#9F86D9] ${
                           isSelected ? 'border-[#9F86D9] bg-[#F5F2FF]' : 'border-[#DBE2E5] bg-white'

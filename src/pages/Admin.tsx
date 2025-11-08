@@ -16,6 +16,7 @@ import {
   SparklesIcon,
   GiftIcon,
   TicketIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import Categories from './admin/Categories';
 import Products from './admin/Products';
@@ -23,6 +24,7 @@ import OrdersPage from './admin/Orders';
 import Coupons from './admin/Coupons';
 import Customers from './admin/Customers';
 import Reviews from './Reviews';
+import TrackingAnalytics from './admin/TrackingAnalytics';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import DiscountCampaigns from './admin/DiscountCampaigns';
 import NotificationDropdown from '../components/NotificationDropdown';
@@ -45,7 +47,8 @@ type AdminMenuKey =
   | 'categories'
   | 'customers'
   | 'shipping'
-  | 'reviews';
+  | 'reviews'
+  | 'tracking';
 
 const Admin = () => {
   const { t, i18n } = useTranslation();
@@ -279,6 +282,7 @@ const Admin = () => {
     { key: 'dashboard', icon: ChartPieIcon, label: t('admin.dashboard'), section: 'Main' },
     { key: 'orders', icon: ShoppingBagIcon, label: t('admin.orders'), section: 'Main' },
     { key: 'products', icon: CubeIcon, label: t('admin.products'), section: 'Main' },
+    { key: 'tracking', icon: ChartBarIcon, label: t('admin.tracking') || 'Tracking', section: 'Main' },
   { key: 'coupons', icon: TicketIcon, label: t('admin.coupons'), section: 'Catalog' },
   { key: 'discounts', icon: GiftIcon, label: t('admin.discountCampaigns'), section: 'Catalog' },
     { key: 'categories', icon: TagIcon, label: t('admin.categories'), section: 'Catalog' },
@@ -310,7 +314,7 @@ const Admin = () => {
           {/* Main Section */}
           <div className="mb-6">
             <div className="text-[10px] text-gray-400 uppercase px-3 py-1 mb-1">{t('admin.main')}</div>
-            {menuItems.slice(0, 3).map((item) => (
+            {menuItems.slice(0, 4).map((item) => (
               <button
                 key={item.key}
                 onClick={() => setSelectedMenu(item.key)}
@@ -329,7 +333,7 @@ const Admin = () => {
           {/* Catalog Section */}
           <div>
             <div className="text-[10px] text-gray-400 uppercase px-3 py-1 mb-1">{t('admin.catalog')}</div>
-            {menuItems.slice(3).map((item) => (
+            {menuItems.slice(4).map((item) => (
               <button
                 key={item.key}
                 onClick={() => setSelectedMenu(item.key)}
@@ -407,6 +411,8 @@ const Admin = () => {
             <Customers />
           ) : selectedMenu === 'reviews' ? (
             <Reviews />
+          ) : selectedMenu === 'tracking' ? (
+            <TrackingAnalytics />
           ) : (
             <div className="p-7 space-y-8">
               {/* Date Filter */}

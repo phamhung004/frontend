@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { formatCurrency } from '../utils/currency';
 import { resolveProductPricing } from '../utils/pricing';
 import { productService } from '../services/productService';
+import productTrackingService from '../services/productTrackingService';
 import type { ProductDetail, ProductVariant } from '../types/product';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../components/ui/ToastContainer';
@@ -92,6 +93,19 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
 
     fetchProduct();
   }, [initialProduct, landingProductId]);
+
+  // Track product view and time spent
+  useEffect(() => {
+    if (!product) return;
+
+    // Track view
+    productTrackingService.trackView(product.id, selectedVariant?.id);
+
+    // Track time spent
+    const cleanup = productTrackingService.createTimeTracker(product.id, selectedVariant?.id);
+
+    return cleanup;
+  }, [product, selectedVariant?.id]);
 
   // Load provinces on mount
   useEffect(() => {
@@ -442,6 +456,12 @@ const ProductLanding = ({ initialProduct }: ProductLandingProps) => {
         productId: product.id,
         variantId: selectedVariant?.id,
         quantity: toAdd,
+      });
+
+      // Track add to cart event
+      productTrackingService.trackAddToCart(product.id, selectedVariant?.id, {
+        quantity: toAdd,
+        price: pricing?.finalPrice,
       });
 
       toast.success(
