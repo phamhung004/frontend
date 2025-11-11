@@ -9,6 +9,8 @@ import Topbar from './components/Topbar';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import BackToTop from './components/BackToTop';
+import ComparisonBadge from './components/ComparisonBadge';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 // Lazy load to avoid naming conflict with ProductDetail type
@@ -37,6 +39,8 @@ function App() {
           <ToastProvider>
             <Router>
             <ScrollToTop />
+            <BackToTop />
+            <ComparisonBadge />
             <Routes>
             {/* Admin Route - No header/footer - Protected */}
             <Route 

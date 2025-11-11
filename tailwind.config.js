@@ -23,6 +23,7 @@ export default {
         'fadeIn': 'fadeIn 0.2s ease-out',
         'scaleIn': 'scaleIn 0.2s ease-out',
         'slideInRight': 'slideInRight 0.3s ease-out',
+        'shimmer': 'shimmer 2s infinite',
       },
       keyframes: {
         slideUp: {
@@ -40,6 +41,10 @@ export default {
         slideInRight: {
           '0%': { transform: 'translateX(100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
         },
       },
     },

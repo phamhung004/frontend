@@ -432,6 +432,7 @@
   "admin": {
     "dashboard": "Tổng quan",
     "orders": "Đơn hàng",
+    "totalRevenue": "Tổng doanh thu",
     "products": "Sản phẩm",
     "categories": "Danh mục",
     "customers": "Khách hàng",
