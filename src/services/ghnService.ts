@@ -1,4 +1,5 @@
 import axios from 'axios';
+import api from './api';
 
 export interface GHNProvince {
   ProvinceID: number;
@@ -16,6 +17,11 @@ export interface GHNWard {
   WardCode: string;
   WardName: string;
   DistrictID: number;
+}
+
+export interface ShippingFeeResult {
+  shippingFee: number;
+  fallbackApplied: boolean;
 }
 
 interface GHNResponse<T> {
@@ -95,6 +101,26 @@ const ghnService = {
     const wards = response.data?.data ?? [];
     wardCache.set(districtId, wards);
     return wards;
+  },
+
+  async calculateShippingFee(
+    toDistrictId: number,
+    toWardCode: string,
+    weight: number,
+    insuranceValue: number,
+    itemCount: number,
+    subtotal: number
+  ): Promise<ShippingFeeResult> {
+    const response = await api.post<ShippingFeeResult>('/shipping/fee', {
+      districtId: toDistrictId,
+      wardCode: toWardCode,
+      weight: Math.max(Math.round(weight), 200),
+      insuranceValue: Math.max(Math.round(insuranceValue), 0),
+      itemCount,
+      subtotal,
+    });
+
+    return response.data;
   },
 };
 

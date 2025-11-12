@@ -10,6 +10,8 @@ export interface CheckoutAddress {
   address2?: string;
   country: string;
   postcode: string;
+  districtId?: number;
+  wardCode?: string;
 }
 
 export interface CheckoutRequestPayload {
@@ -25,6 +27,8 @@ export interface CheckoutRequestPayload {
   taxAmount?: number;
   discountAmount?: number;
   couponCode?: string;
+  shippingDistrictId?: number;
+  shippingWardCode?: string;
 }
 
 export interface CheckoutItemSummary {

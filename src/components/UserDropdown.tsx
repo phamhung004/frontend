@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UserDropdownProps {
   onLogout: () => void;
@@ -8,6 +9,9 @@ interface UserDropdownProps {
 const UserDropdown = ({ onLogout }: UserDropdownProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const role = user?.role?.toUpperCase();
+  const isAdmin = role === 'ADMIN' || role === 'ADMINISTRATOR';
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -27,6 +31,19 @@ const UserDropdown = ({ onLogout }: UserDropdownProps) => {
           </svg>
           <span>{t('userDropdown.myAccount')}</span>
         </button>
+
+        {isAdmin && (
+          <button
+            onClick={() => handleNavigate('/admin')}
+            className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-purple-50 hover:text-[#9F86D9] transition-colors flex items-center gap-3"
+            style={{ fontFamily: 'DM Sans' }}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+            <span>{t('userDropdown.admin')}</span>
+          </button>
+        )}
 
         {/* Đơn mua */}
         <button

@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import Topbar from './components/Topbar';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -46,17 +47,17 @@ function App() {
             <Route 
               path="/admin" 
               element={
-                <ProtectedRoute>
+                <AdminRoute>
                   <Admin />
-                </ProtectedRoute>
+                </AdminRoute>
               } 
             />
             <Route 
               path="/admin/orders/:orderId" 
               element={
-                <ProtectedRoute>
+                <AdminRoute>
                   <OrderDetail />
-                </ProtectedRoute>
+                </AdminRoute>
               } 
             />
             

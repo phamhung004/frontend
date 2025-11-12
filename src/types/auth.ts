@@ -1,3 +1,5 @@
+import type { UserRole } from './user';
+
 export interface User {
   id: string; // Supabase Auth ID (UUID)
   backendUserId?: number; // Backend database ID (BIGINT)
@@ -10,6 +12,7 @@ export interface User {
   dateOfBirth?: string;
   gender?: 'male' | 'female' | 'other';
   createdAt?: string;
+  role?: UserRole;
 }
 
 export interface AuthError {

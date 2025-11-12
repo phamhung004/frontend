@@ -1,12 +1,13 @@
 import { getSupabaseClient } from './supabaseClient';
 import api from './api';
-import type { 
-  User, 
-  AuthError, 
-  SignUpCredentials, 
-  SignInCredentials, 
-  ResetPasswordCredentials 
+import type {
+  User,
+  AuthError,
+  SignUpCredentials,
+  SignInCredentials,
+  ResetPasswordCredentials,
 } from '../types/auth';
+import type { AdminUser, UserRole } from '../types/user';
 
 class AuthService {
   private supabase = getSupabaseClient();
@@ -45,14 +46,32 @@ class AuthService {
   /**
    * Lấy backend user ID từ auth ID
    */
-  private async getBackendUserId(authUserId: string): Promise<number | undefined> {
+  private async getBackendUser(authUserId: string): Promise<AdminUser | null> {
     try {
       const response = await api.get(`/users/auth/${authUserId}`);
-      return response.data.id; // Backend user ID
+      return response.data as AdminUser;
     } catch (error) {
-      console.error('Failed to get backend user ID:', error);
+      console.error('Failed to get backend user profile:', error);
+      return null;
+    }
+  }
+
+  private normalizeRole(role?: string | null): UserRole | undefined {
+    if (!role) {
       return undefined;
     }
+
+    const normalized = role.toString().trim().toUpperCase();
+
+    if (normalized === 'ADMINISTRATOR' || normalized === 'ADMIN') {
+      return 'ADMIN';
+    }
+
+    if (normalized === 'CUSTOMER') {
+      return 'CUSTOMER';
+    }
+
+    return undefined;
   }
 
   /**
@@ -135,18 +154,21 @@ class AuthService {
       // Cập nhật last login
       await this.updateLastLogin(data.user.id);
 
-      // Lấy backend user ID
-      const backendUserId = await this.getBackendUserId(data.user.id);
+
+      const backendUser = await this.getBackendUser(data.user.id);
+      const roleFromMetadata = this.normalizeRole(data.user.user_metadata?.role);
+      const role = this.normalizeRole(backendUser?.role) ?? roleFromMetadata;
 
       const user: User = {
         id: data.user.id,
-        backendUserId,
+        backendUserId: backendUser?.id,
         email: data.user.email!,
         firstName: data.user.user_metadata?.first_name,
         lastName: data.user.user_metadata?.last_name,
         fullName: data.user.user_metadata?.full_name,
         avatarUrl: data.user.user_metadata?.avatar_url,
         createdAt: data.user.created_at,
+        role,
       };
 
       return { user, error: null };
@@ -196,18 +218,20 @@ class AuthService {
         return null;
       }
 
-      // Lấy backend user ID
-      const backendUserId = await this.getBackendUserId(user.id);
+      const backendUser = await this.getBackendUser(user.id);
+      const roleFromMetadata = this.normalizeRole(user.user_metadata?.role);
+      const role = this.normalizeRole(backendUser?.role) ?? roleFromMetadata;
 
       return {
         id: user.id,
-        backendUserId,
+        backendUserId: backendUser?.id,
         email: user.email!,
         firstName: user.user_metadata?.first_name,
         lastName: user.user_metadata?.last_name,
         fullName: user.user_metadata?.full_name,
         avatarUrl: user.user_metadata?.avatar_url,
         createdAt: user.created_at,
+        role,
       };
     } catch {
       return null;
@@ -277,22 +301,26 @@ class AuthService {
     const { data: { subscription } } = this.supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
-          let backendUserId: number | undefined;
+          let backendUser: AdminUser | null = null;
           try {
-            backendUserId = await this.getBackendUserId(session.user.id);
+            backendUser = await this.getBackendUser(session.user.id);
           } catch (error) {
-            console.error('Failed to resolve backend user ID on auth change:', error);
+            console.error('Failed to resolve backend user on auth change:', error);
           }
+
+          const roleFromMetadata = this.normalizeRole(session.user.user_metadata?.role);
+          const role = this.normalizeRole(backendUser?.role) ?? roleFromMetadata;
 
           const user: User = {
             id: session.user.id,
-            backendUserId,
+            backendUserId: backendUser?.id,
             email: session.user.email!,
             firstName: session.user.user_metadata?.first_name,
             lastName: session.user.user_metadata?.last_name,
             fullName: session.user.user_metadata?.full_name,
             avatarUrl: session.user.user_metadata?.avatar_url,
             createdAt: session.user.created_at,
+            role,
           };
           callback(user);
         } else {

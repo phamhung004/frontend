@@ -84,6 +84,8 @@ const Checkout = () => {
   const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
   const [loadingCoupons, setLoadingCoupons] = useState(false);
   const [showCouponList, setShowCouponList] = useState(false);
+  const [shippingFee, setShippingFee] = useState(0);
+  const [calculatingShipping, setCalculatingShipping] = useState(false);
 
   const subtotal = useMemo(() => Number(cart?.subtotal ?? 0), [cart?.subtotal]);
   const originalSubtotal = useMemo(
@@ -96,11 +98,10 @@ const Checkout = () => {
     [originalSubtotal, subtotal]
   );
   const hasProductDiscount = productDiscount > 0.009;
-  const shippingFee = 0;
   const taxAmount = 0;
   const total = useMemo(
     () => Math.max(subtotal + shippingFee + taxAmount - discountAmount, 0),
-    [subtotal, discountAmount]
+    [subtotal, shippingFee, discountAmount]
   );
 
   useEffect(() => {
@@ -273,6 +274,11 @@ const Checkout = () => {
       ...prev,
       postcode: wardCode,
     }));
+
+    // Calculate shipping fee when shipping location matches billing
+    if (!differentAddress && billingLocation.districtId && wardCode) {
+      void calculateShippingFee(billingLocation.districtId, wardCode);
+    }
   };
 
   const handleShippingProvinceChange = async (event: ChangeEvent<HTMLSelectElement>) => {
@@ -362,6 +368,46 @@ const Checkout = () => {
       ...prev,
       postcode: wardCode,
     }));
+
+    // Calculate shipping fee when shipping ward is selected
+    if (differentAddress && shippingLocation.districtId && wardCode) {
+      void calculateShippingFee(shippingLocation.districtId, wardCode);
+    }
+  };
+
+  // Calculate shipping fee based on destination
+  const calculateShippingFee = async (districtId: number, wardCode: string) => {
+    if (!districtId || !wardCode) {
+      return;
+    }
+
+    setShippingFee(0);
+    setCalculatingShipping(true);
+    try {
+      // Calculate total weight of cart items (estimate 500g per item)
+      const totalWeight = cart ? cart.items.reduce((acc, item) => acc + item.quantity * 500, 0) : 500;
+      const totalItemCount = cart ? cart.items.reduce((acc, item) => acc + item.quantity, 0) : 1;
+
+      // Calculate insurance value (10% of subtotal)
+      const insuranceValue = Math.max(Math.round(subtotal * 0.1), 0);
+
+      const feeResponse = await ghnService.calculateShippingFee(
+        districtId,
+        wardCode,
+        totalWeight,
+        insuranceValue,
+        totalItemCount,
+        subtotal
+      );
+
+      setShippingFee(Number(feeResponse.shippingFee ?? 0));
+    } catch (error) {
+      console.error('Failed to calculate shipping fee', error);
+      toast.error(t('checkout.errors.shippingCalculation'));
+      setShippingFee(30000); // Fallback to default shipping fee (30,000 VND)
+    } finally {
+      setCalculatingShipping(false);
+    }
   };
 
   // Handle saved address selection for billing
@@ -393,6 +439,11 @@ const Checkout = () => {
     if (address.districtId) {
       ghnService.getWards(address.districtId).then(setBillingWards).catch(console.error);
     }
+
+    // Calculate shipping fee if address has complete location data
+    if (!differentAddress && address.districtId && address.wardCode) {
+      void calculateShippingFee(address.districtId, address.wardCode);
+    }
   };
 
   // Handle saved address selection for shipping
@@ -423,6 +474,11 @@ const Checkout = () => {
     }
     if (address.districtId) {
       ghnService.getWards(address.districtId).then(setShippingWards).catch(console.error);
+    }
+
+    // Calculate shipping fee if address has complete location data
+    if (differentAddress && address.districtId && address.wardCode) {
+      void calculateShippingFee(address.districtId, address.wardCode);
     }
   };
 
@@ -630,13 +686,24 @@ const Checkout = () => {
       ? formatAddressForSubmission(shipping, shippingLocation)
       : formattedBilling;
 
+    // Determine the actual shipping location
+    const actualShippingLocation = differentAddress ? shippingLocation : billingLocation;
+
     setPlacingOrder(true);
     try {
       await orderService.placeOrder({
         userId: user?.backendUserId,
         sessionId: currentSessionId,
-        billing: formattedBilling,
-        shipping: formattedShipping,
+        billing: {
+          ...formattedBilling,
+          districtId: billingLocation.districtId ?? undefined,
+          wardCode: billingLocation.wardCode || undefined,
+        },
+        shipping: {
+          ...formattedShipping,
+          districtId: actualShippingLocation.districtId ?? undefined,
+          wardCode: actualShippingLocation.wardCode || undefined,
+        },
         shipToDifferentAddress: differentAddress,
         createAccount,
         paymentMethod: 'COD',
@@ -1316,7 +1383,15 @@ const Checkout = () => {
               <div className="space-y-2 mb-6 pb-6 border-b border-[#C4C4C4]">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[#1C1D1D]">{t('cart.shipping')}</span>
-                  <span className="font-bold text-base text-[#1C1D1D]">{formatCurrency(shippingFee)}</span>
+                  <span className="font-bold text-base text-[#1C1D1D]">
+                    {calculatingShipping ? (
+                      <span className="text-[#9F86D9]">{t('common.loading')}...</span>
+                    ) : shippingFee > 0 ? (
+                      formatCurrency(shippingFee)
+                    ) : (
+                      <span className="text-[#646667]">{t('checkout.shipping.enterAddress')}</span>
+                    )}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-[#1C1D1D]">{t('cart.tax')}</span>

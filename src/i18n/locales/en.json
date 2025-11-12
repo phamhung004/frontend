@@ -189,12 +189,16 @@
     },
     "placeOrder": "Place an Order",
     "success": "Your order has been placed successfully!",
+    "shipping": {
+      "enterAddress": "Enter delivery address"
+    },
     "errors": {
       "unknown": "Unable to place order. Please try again.",
       "session": "Checkout session expired. Please refresh and try again.",
       "provinceLoad": "Unable to load provinces. Please try again.",
       "districtLoad": "Unable to load districts. Please try again.",
-      "wardLoad": "Unable to load wards. Please try again."
+      "wardLoad": "Unable to load wards. Please try again.",
+      "shippingCalculation": "Unable to calculate shipping fee. Using default rate."
     },
     "validation": {
       "missingFields": "Please fill in all required fields.",
@@ -281,6 +285,7 @@
   "userDropdown": {
     "myAccount": "My Account",
     "myOrders": "My Orders",
+    "admin": "Admin Dashboard",
     "logout": "Logout"
   },
   "accountSidebar": {

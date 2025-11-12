@@ -188,12 +188,16 @@
     },
     "placeOrder": "Đặt hàng",
     "success": "Đặt hàng thành công!",
+    "shipping": {
+      "enterAddress": "Nhập địa chỉ giao hàng"
+    },
     "errors": {
       "unknown": "Không thể đặt hàng. Vui lòng thử lại.",
       "session": "Phiên thanh toán đã hết hạn. Vui lòng tải lại trang và thử lại.",
       "provinceLoad": "Không thể tải danh sách tỉnh/thành. Vui lòng thử lại.",
       "districtLoad": "Không thể tải danh sách quận/huyện. Vui lòng thử lại.",
-      "wardLoad": "Không thể tải danh sách phường/xã. Vui lòng thử lại."
+      "wardLoad": "Không thể tải danh sách phường/xã. Vui lòng thử lại.",
+      "shippingCalculation": "Không thể tính phí vận chuyển. Sử dụng phí mặc định."
     },
     "validation": {
       "missingFields": "Vui lòng điền đầy đủ các trường bắt buộc.",
@@ -281,6 +285,7 @@
   "userDropdown": {
     "myAccount": "Tài khoản của tôi",
     "myOrders": "Đơn mua",
+    "admin": "Trang quản trị",
     "logout": "Đăng xuất"
   },
   "accountSidebar": {
